@@ -1,35 +1,27 @@
-# Production Dockerfile for Backend
-
-# 1. Build environment
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
 WORKDIR /app
+
+# Copy package files and install all dependencies
 COPY package*.json ./
 COPY tsconfig.json ./
 COPY nest-cli.json ./
 COPY prisma ./prisma/
 
-# Install dependencies and generate Prisma client
-RUN npm ci
+RUN npm install
+
+# Generate Prisma client
 RUN npx prisma generate
+
+# Copy source code
 COPY . .
 
-# Build the NestJS app
+# Build the NestJS TypeScript app
 RUN npm run build
 
-# 2. Production environment
-FROM node:20-alpine AS runner
-
-WORKDIR /app
-ENV NODE_ENV production
-
-# Only copy required files to run the app
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/prisma ./prisma
+ENV NODE_ENV=production
+ENV PORT=4000
 
 EXPOSE 4000
 
-# Run migrations (if needed at startup, though typically done externally) and start the app
-CMD [ "npm", "run", "start:prod" ]
+CMD ["node", "dist/main"]
