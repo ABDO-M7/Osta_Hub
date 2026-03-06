@@ -1,12 +1,12 @@
+# fly.toml app configuration file generated for neurotron on 2026-03-06T15:54:32Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
 app = 'neurotron'
 primary_region = 'ams'
 
 [build]
-  dockerfile = "Dockerfile"
-
-[env]
-  NODE_ENV = 'production'
-  PORT = '4000'
 
 [http_service]
   internal_port = 4000
@@ -17,6 +17,7 @@ primary_region = 'ams'
   processes = ['app']
 
 [[vm]]
-  memory = '256mb'
+  memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
+  memory_mb = 256
