@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+}
+
+enum QuestionType {
+  MCQ
+  TRUE_FALSE
+  ESSAY
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  name      String
+  role      Role      @default(STUDENT)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  attempts  Attempt[]
+
+  @@map("users")
+}
+
+model Subject {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  imageUrl    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lessons     Lesson[]
+  exams       Exam[]
+
+  @@map("subjects")
+}
+
+model Lesson {
+  id        Int           @id @default(autoincrement())
+  title     String
+  subjectId Int
+  order     Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  subject   Subject       @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  blocks    LessonBlock[]
+
+  @@map("lessons")
+}
+
+model LessonBlock {
+  id       Int    @id @default(autoincrement())
+  lessonId Int
+  type     String // paragraph, image, interactive-graph, quiz
+  content  Json
+  order    Int    @default(0)
+  lesson   Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@map("lesson_blocks")
+}
+
+model Exam {
+  id        Int        @id @default(autoincrement())
+  title     String
+  subjectId Int
+  duration  Int        // in minutes
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  subject   Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  questions Question[]
+  attempts  Attempt[]
+
+  @@map("exams")
+}
+
+model Question {
+  id            Int          @id @default(autoincrement())
+  examId        Int
+  type          QuestionType
+  text          String
+  options       Json?        // For MCQ: ["A", "B", "C", "D"]
+  correctAnswer String?      // For MCQ/TF
+  points        Int          @default(1)
+  order         Int          @default(0)
+  exam          Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
+  answers       Answer[]
+
+  @@map("questions")
+}
+
+model Attempt {
+  id          Int       @id @default(autoincrement())
+  examId      Int
+  userId      Int
+  score       Float?
+  totalPoints Int?
+  startedAt   DateTime  @default(now())
+  submittedAt DateTime?
+  exam        Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answers     Answer[]
+
+  @@map("attempts")
+}
+
+model Answer {
+  id         Int      @id @default(autoincrement())
+  attemptId  Int
+  questionId Int
+  response   String?
+  isCorrect  Boolean?
+  aiScore    Float?
+  aiFeedback String?
+  attempt    Attempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("answers")
+}

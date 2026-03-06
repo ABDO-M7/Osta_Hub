@@ -1,0 +1,43 @@
+import { Controller, Get, Post, Put, Delete, Body, Param, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { SubjectsService } from './subjects.service';
+import { CreateSubjectDto } from './dto/create-subject.dto';
+import { UpdateSubjectDto } from './dto/update-subject.dto';
+
+@Controller('subjects')
+export class SubjectsController {
+    constructor(private subjectsService: SubjectsService) { }
+
+    @Get()
+    findAll() {
+        return this.subjectsService.findAll();
+    }
+
+    @Get(':id')
+    findOne(@Param('id', ParseIntPipe) id: number) {
+        return this.subjectsService.findOne(id);
+    }
+
+    @Post()
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles('ADMIN')
+    create(@Body() dto: CreateSubjectDto) {
+        return this.subjectsService.create(dto);
+    }
+
+    @Put(':id')
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles('ADMIN')
+    update(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateSubjectDto) {
+        return this.subjectsService.update(id, dto);
+    }
+
+    @Delete(':id')
+    @UseGuards(AuthGuard('jwt'), RolesGuard)
+    @Roles('ADMIN')
+    remove(@Param('id', ParseIntPipe) id: number) {
+        return this.subjectsService.remove(id);
+    }
+}
