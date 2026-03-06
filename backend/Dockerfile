@@ -11,6 +11,7 @@ COPY prisma ./prisma/
 
 # Install dependencies and generate Prisma client
 RUN npm ci
+RUN npx prisma generate
 COPY . .
 
 # Build the NestJS app
