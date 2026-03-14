@@ -139,6 +139,19 @@ function CompleteProfileForm() {
                         >
                             {isLoading ? "Saving..." : "Complete Setup →"}
                         </Button>
+
+                        <div className="pt-4 text-center border-t border-white/10 mt-4">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    useAuthStore.getState().logout()
+                                    router.push("/login")
+                                }}
+                                className="text-sm text-gray-500 hover:text-gray-300 transition-colors"
+                            >
+                                Not you? Sign out
+                            </button>
+                        </div>
                     </form>
                 </CardContent>
             </Card>
