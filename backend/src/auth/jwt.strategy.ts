@@ -7,6 +7,8 @@ interface JwtPayload {
     sub: number;
     email: string;
     role: string;
+    profileComplete: boolean;
+    emailVerified: boolean;
 }
 
 @Injectable()
@@ -24,6 +26,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         if (!user) {
             throw new UnauthorizedException();
         }
-        return { id: user.id, email: user.email, name: user.name, role: user.role };
+        return {
+            sub: user.id,
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            profileComplete: user.profileComplete,
+            emailVerified: user.emailVerified,
+        };
     }
 }
+

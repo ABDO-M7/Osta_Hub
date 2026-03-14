@@ -6,6 +6,10 @@ export interface User {
     email: string;
     name: string;
     role: 'ADMIN' | 'STUDENT';
+    avatar?: string;
+    username?: string;
+    profileComplete?: boolean;
+    emailVerified?: boolean;
 }
 
 interface AuthState {
@@ -30,3 +34,4 @@ export const useAuthStore = create<AuthState>()(
         }
     )
 );
+

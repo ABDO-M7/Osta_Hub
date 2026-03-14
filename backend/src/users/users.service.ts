@@ -14,20 +14,79 @@ export class UsersService {
         return this.prisma.user.findUnique({ where: { id } });
     }
 
-    async create(data: { email: string; password: string; name: string; role?: string }) {
+    async findByProviderId(provider: string, providerId: string) {
+        return this.prisma.user.findFirst({ where: { provider, providerId } });
+    }
+
+    async findByUsername(username: string) {
+        return this.prisma.user.findUnique({ where: { username } });
+    }
+
+    async findByVerifyToken(token: string) {
+        return this.prisma.user.findFirst({ where: { emailVerifyToken: token } });
+    }
+
+    async create(data: {
+        email: string;
+        password?: string | null;
+        name: string;
+        role?: string;
+        provider?: string;
+        providerId?: string;
+        avatar?: string;
+        emailVerified?: boolean;
+    }) {
         return this.prisma.user.create({
             data: {
                 email: data.email,
-                password: data.password,
+                password: data.password || null,
                 name: data.name,
                 role: (data.role as Role) || Role.STUDENT,
+                provider: data.provider,
+                providerId: data.providerId,
+                avatar: data.avatar,
+                emailVerified: data.emailVerified || false,
             },
+        });
+    }
+
+    async linkOAuth(userId: number, provider: string, providerId: string, avatar?: string) {
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: { provider, providerId, avatar },
+        });
+    }
+
+    async updateProfile(userId: number, data: {
+        username: string;
+        phone: string;
+        level: string;
+        specialization: string;
+        profileComplete: boolean;
+    }) {
+        return this.prisma.user.update({
+            where: { id: userId },
+            data,
+        });
+    }
+
+    async setVerifyToken(userId: number, token: string) {
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: { emailVerifyToken: token },
+        });
+    }
+
+    async markEmailVerified(userId: number) {
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: { emailVerified: true, emailVerifyToken: null },
         });
     }
 
     async findAll() {
         return this.prisma.user.findMany({
-            select: { id: true, email: true, name: true, role: true, createdAt: true },
+            select: { id: true, email: true, name: true, role: true, createdAt: true, username: true, avatar: true },
         });
     }
 

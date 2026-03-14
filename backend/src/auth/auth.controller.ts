@@ -1,20 +1,59 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req, Res, HttpCode } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
-import { LoginDto } from './dto/login.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { CompleteProfileDto } from './dto/complete-profile.dto';
 
 @Controller('auth')
 export class AuthController {
     constructor(private authService: AuthService) { }
 
-    @Post('register')
-    async register(@Body() dto: RegisterDto) {
-        return this.authService.register(dto);
+    // ─── Google OAuth ──────────────────────────────────────────────────────────
+    @Get('google')
+    @UseGuards(AuthGuard('google'))
+    googleAuth() { /* redirect handled by passport */ }
+
+    @Get('google/callback')
+    @UseGuards(AuthGuard('google'))
+    async googleCallback(@Req() req: any, @Res() res: Response) {
+        const { accessToken, user } = req.user;
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        const redirectPath = user.profileComplete ? '/student/dashboard' : '/complete-profile';
+        res.redirect(`${frontendUrl}${redirectPath}?token=${accessToken}`);
     }
 
-    @Post('login')
-    @HttpCode(HttpStatus.OK)
-    async login(@Body() dto: LoginDto) {
-        return this.authService.login(dto);
+    // ─── GitHub OAuth ──────────────────────────────────────────────────────────
+    @Get('github')
+    @UseGuards(AuthGuard('github'))
+    githubAuth() { /* redirect handled by passport */ }
+
+    @Get('github/callback')
+    @UseGuards(AuthGuard('github'))
+    async githubCallback(@Req() req: any, @Res() res: Response) {
+        const { accessToken, user } = req.user;
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        const redirectPath = user.profileComplete ? '/student/dashboard' : '/complete-profile';
+        res.redirect(`${frontendUrl}${redirectPath}?token=${accessToken}`);
+    }
+
+    // ─── Profile Completion ────────────────────────────────────────────────────
+    @Post('complete-profile')
+    @UseGuards(JwtAuthGuard)
+    async completeProfile(@Req() req: any, @Body() dto: CompleteProfileDto) {
+        return this.authService.completeProfile(req.user.sub, dto);
+    }
+
+    // ─── Email Verification ────────────────────────────────────────────────────
+    @Post('send-verification')
+    @UseGuards(JwtAuthGuard)
+    async sendVerification(@Req() req: any) {
+        return this.authService.sendVerificationEmail(req.user.sub);
+    }
+
+    @Get('verify-email')
+    async verifyEmail(@Req() req: any) {
+        const token = req.query.token as string;
+        return this.authService.verifyEmail(token);
     }
 }

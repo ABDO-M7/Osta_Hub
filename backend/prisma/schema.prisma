@@ -19,14 +19,27 @@ enum QuestionType {
 }
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  password  String
-  name      String
-  role      Role      @default(STUDENT)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  attempts  Attempt[]
+  id                Int       @id @default(autoincrement())
+  email             String    @unique
+  password          String?
+  name              String
+  role              Role      @default(STUDENT)
+  // OAuth
+  provider          String?   // "google" | "github"
+  providerId        String?
+  avatar            String?
+  // Profile completion
+  username          String?   @unique
+  phone             String?
+  level             String?
+  specialization    String?
+  profileComplete   Boolean   @default(false)
+  // Email verification
+  emailVerified     Boolean   @default(false)
+  emailVerifyToken  String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  attempts          Attempt[]
 
   @@map("users")
 }
