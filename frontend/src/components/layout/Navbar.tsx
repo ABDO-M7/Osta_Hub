@@ -35,6 +35,7 @@ export function Navbar() {
                         <Link href="/" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Home</Link>
                         <Link href="/courses" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Courses</Link>
                         <Link href="/about" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">About</Link>
+                        <Link href="/contact" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">Contact</Link>
                     </div>
 
                     <div className="flex items-center gap-4">
