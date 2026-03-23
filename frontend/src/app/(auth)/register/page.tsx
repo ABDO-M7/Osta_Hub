@@ -10,6 +10,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:4000"
 
 import Image from "next/image"
+import { Logo } from "@/components/ui/Logo"
 
 export default function RegisterPage() {
     const router = useRouter()
@@ -65,7 +66,7 @@ export default function RegisterPage() {
                 <div className="bg-violet-500/20 p-2 rounded-xl flex items-center justify-center">
                     <Image src="/icon.svg" alt="NeuroTron Logo" width={24} height={24} />
                 </div>
-                <span className="font-bold text-2xl tracking-tight text-white">NeuroTron</span>
+                <Logo className="text-2xl tracking-tight text-white" />
                 <Sparkles className="h-4 w-4 text-violet-400" />
             </div>
 
@@ -75,7 +76,7 @@ export default function RegisterPage() {
                         Create an account
                     </CardTitle>
                     <CardDescription className="text-gray-400">
-                        Join NeuroTron to start tracking your learning journey
+                        Join <Logo className="inline-block" /> to start tracking your learning journey
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-3 pt-2 pb-6 px-6">

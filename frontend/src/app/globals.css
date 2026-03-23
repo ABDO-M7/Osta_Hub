@@ -37,6 +37,9 @@
   --color-destructive: var(--destructive);
   --color-ring: var(--ring);
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-neo: var(--font-neofolia);
+  --font-beh: var(--font-behance);
+  --font-dro: var(--font-droid);
 }
 
 * {

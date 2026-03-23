@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic"
 import Link from "next/link"
 import Image from "next/image"
+import { Logo } from "@/components/ui/Logo"
 
 // Loaded client-side only — WebGL doesn't work on SSR
 const LiquidEther = dynamic(() => import("@/components/LiquidEther"), { ssr: false })
@@ -41,7 +42,7 @@ export default function HomePage() {
                         style={{ background: "rgba(57,12,237,0.3)", border: "1px solid rgba(57,12,237,0.5)", backdropFilter: "blur(12px)" }}>
                         <Image src="/icon.svg" alt="NeuroTron Logo" width={24} height={24} />
                     </div>
-                    <span className="font-bold text-xl tracking-tight" style={{ color: "#f7ebf9" }}>NeuroTron</span>
+                    <Logo className="text-xl tracking-tight" />
                 </div>
                 <div className="flex items-center gap-3">
                     <Link
@@ -95,7 +96,7 @@ export default function HomePage() {
                         textShadow: "0 0 80px rgba(82,39,255,0.5), 0 0 20px rgba(177,158,239,0.3)",
                     }}
                 >
-                    Neuro<span style={{ color: "#390ced", textShadow: "0 0 40px rgba(57,12,237,0.8)" }}>Tron</span>
+                    <Logo glow />
                 </h1>
 
                 {/* Slogan */}
@@ -181,7 +182,7 @@ export default function HomePage() {
 
             {/* ─── Footer ───────────────────────────────────────────────── */}
             <footer className="relative z-20 text-center py-6 text-xs" style={{ color: "rgba(247,235,249,0.3)" }}>
-                © 2025 NeuroTron. All rights reserved.
+                © 2025 <Logo />. All rights reserved.
             </footer>
         </main>
     )

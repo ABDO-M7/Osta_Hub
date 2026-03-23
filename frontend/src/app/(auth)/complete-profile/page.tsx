@@ -11,6 +11,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { BookOpen, User, Phone, GraduationCap, Layers } from "lucide-react"
 
 import Image from "next/image"
+import { Logo } from "@/components/ui/Logo"
 
 const LEVELS = ["1st Year", "2nd Year", "3rd Year", "4th Year", "Graduate", "Postgraduate"]
 
@@ -72,7 +73,7 @@ function CompleteProfileForm() {
                 <div className="bg-violet-500/20 p-2 rounded-xl flex items-center justify-center">
                     <Image src="/icon.svg" alt="NeuroTron Logo" width={24} height={24} />
                 </div>
-                <span className="font-bold text-2xl tracking-tight text-white">NeuroTron</span>
+                <Logo className="text-2xl tracking-tight text-white" />
             </div>
 
             <Card className="w-full max-w-md border-[#1e1e2e] bg-[#12121a]/80 backdrop-blur-xl">

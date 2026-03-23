@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
+import { Logo } from "@/components/ui/Logo"
 
 const features = [
     {
@@ -45,7 +46,7 @@ export default function AboutPage() {
                     <div className="p-2 rounded-xl" style={{ background: "rgba(57,12,237,0.3)", border: "1px solid rgba(57,12,237,0.5)", backdropFilter: "blur(12px)" }}>
                         <Image src="/icon.svg" alt="NeuroTron Logo" width={22} height={22} />
                     </div>
-                    <span className="font-bold text-xl tracking-tight" style={{ color: "#f7ebf9" }}>NeuroTron</span>
+                    <Logo className="text-xl tracking-tight" />
                 </Link>
                 <Link
                     href="/login"
@@ -70,10 +71,10 @@ export default function AboutPage() {
                 <div className="relative z-10">
                     <h1 className="text-5xl md:text-7xl font-black mb-6 tracking-tight">
                         What is{" "}
-                        <span style={{ color: "#390ced", textShadow: "0 0 40px rgba(57,12,237,0.6)" }}>NeuroTron</span>?
+                        <Logo glow />?
                     </h1>
                     <p className="text-xl max-w-2xl mx-auto mb-4 leading-relaxed" style={{ color: "rgba(247,235,249,0.75)" }}>
-                        NeuroTron is a next-generation EdTech platform that combines structured learning with cutting-edge AI to help students
+                        <Logo /> is a next-generation EdTech platform that combines structured learning with cutting-edge AI to help students
                         study smarter, not harder.
                     </p>
                     <p className="text-base max-w-xl mx-auto" style={{ color: "rgba(247,235,249,0.5)" }}>
@@ -141,7 +142,7 @@ export default function AboutPage() {
                 <div className="relative z-10">
                     <h2 className="text-4xl md:text-5xl font-black mb-6" style={{ color: "#f7ebf9" }}>Ready to level up?</h2>
                     <p className="text-lg mb-8" style={{ color: "rgba(247,235,249,0.6)" }}>
-                        Join thousands of students already learning on NeuroTron.
+                        Join thousands of students already learning on <Logo />.
                     </p>
                     <Link
                         href="/login"
@@ -165,7 +166,7 @@ export default function AboutPage() {
 
             {/* ─── Footer ───────────────────────────────────────────────── */}
             <footer className="text-center py-8 border-t text-sm" style={{ borderColor: "rgba(255,255,255,0.06)", color: "rgba(247,235,249,0.3)" }}>
-                © 2025 NeuroTron — Built with ❤️ for ambitious learners
+                © 2025 <Logo /> — Built with ❤️ for ambitious learners
             </footer>
         </main>
     )

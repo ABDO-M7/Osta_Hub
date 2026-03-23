@@ -1,6 +1,22 @@
 import type { Metadata } from 'next'
+import localFont from 'next/font/local'
 import './globals.css'
 import { Providers } from '@/components/providers'
+
+const neofolia = localFont({
+  src: './fonts/neofolia.woff2',
+  variable: '--font-neofolia',
+})
+
+const behance = localFont({
+  src: './fonts/behance.otf',
+  variable: '--font-behance',
+})
+
+const droid = localFont({
+  src: './fonts/droid.otf',
+  variable: '--font-droid',
+})
 
 export const metadata: Metadata = {
   title: 'NeuroTron',
@@ -14,7 +30,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-sans antialiased">
+      <body className={`font-sans antialiased ${neofolia.variable} ${behance.variable} ${droid.variable}`}>
         <Providers>
           {children}
         </Providers>

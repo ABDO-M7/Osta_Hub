@@ -6,6 +6,7 @@ import { useAuthStore } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { LogOut, BookOpen, Sparkles } from "lucide-react"
+import { Logo } from "@/components/ui/Logo"
 
 export function Navbar() {
     const { user, logout } = useAuthStore()
@@ -25,7 +26,7 @@ export function Navbar() {
                             <div className="bg-violet-500/20 p-1.5 rounded-lg group-hover:bg-violet-500/30 transition-colors flex items-center justify-center">
                                 <Image src="/icon.svg" alt="NeuroTron Logo" width={20} height={20} />
                             </div>
-                            <span className="font-bold text-xl tracking-tight text-white">NeuroTron</span>
+                            <Logo className="text-xl tracking-tight text-white" />
                         </Link>
                     </div>
 

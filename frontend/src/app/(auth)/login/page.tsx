@@ -9,6 +9,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:4000"
 
 import Image from "next/image"
+import { Logo } from "@/components/ui/Logo"
 
 export default function LoginPage() {
     const router = useRouter()
@@ -80,14 +81,14 @@ export default function LoginPage() {
                 <div className="bg-violet-500/20 p-2 rounded-xl flex items-center justify-center">
                     <Image src="/icon.svg" alt="NeuroTron Logo" width={24} height={24} />
                 </div>
-                <span className="font-bold text-2xl tracking-tight text-white">NeuroTron</span>
+                <Logo className="text-2xl tracking-tight text-white" />
                 <Sparkles className="h-4 w-4 text-violet-400" />
             </div>
 
             <Card className="w-full max-w-md relative border-[#1e1e2e] bg-[#12121a]/80 backdrop-blur-xl">
                 <CardHeader className="space-y-1 text-center">
                     <CardTitle className="text-2xl font-bold tracking-tight text-white">
-                        Welcome to NeuroTron
+                        Welcome to <Logo className="inline-block" />
                     </CardTitle>
                     <CardDescription className="text-gray-400">
                         Sign in or create an account to continue
