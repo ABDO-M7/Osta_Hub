@@ -10,6 +10,7 @@ import { ExamsModule } from './exams/exams.module';
 import { AttemptsModule } from './attempts/attempts.module';
 import { AiGradingModule } from './ai-grading/ai-grading.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import { FeedbackModule } from './feedback/feedback.module';
         AttemptsModule,
         AiGradingModule,
         FeedbackModule,
+        NotificationsModule,
     ],
     providers: [
         {

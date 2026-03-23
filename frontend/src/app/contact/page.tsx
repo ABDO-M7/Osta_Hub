@@ -7,7 +7,7 @@ export default function ContactPage() {
     const contacts = [
         {
             name: "LinkedIn",
-            value: "abdelrahman-mostafa-cs",
+            label: "Connect with me",
             url: "https://www.linkedin.com/in/abdelrahman-mostafa-cs/",
             icon: Linkedin,
             color: "text-blue-400",
@@ -15,8 +15,8 @@ export default function ContactPage() {
             border: "group-hover:border-blue-500/50"
         },
         {
-            name: "Email",
-            value: "abdo.mostafa.cs@gmail.com",
+            name: "Gmail",
+            label: "Send me an email",
             url: "mailto:abdo.mostafa.cs@gmail.com",
             icon: Mail,
             color: "text-rose-400",
@@ -25,7 +25,7 @@ export default function ContactPage() {
         },
         {
             name: "Facebook",
-            value: "abdelrahman.mostafa.874695",
+            label: "Find me on Facebook",
             url: "https://www.facebook.com/abdelrahman.mostafa.874695",
             icon: Facebook,
             color: "text-blue-500",
@@ -34,7 +34,7 @@ export default function ContactPage() {
         },
         {
             name: "WhatsApp",
-            value: "+20 105 026 6177",
+            label: "Message me on WhatsApp",
             url: "https://wa.me/201050266177",
             icon: MessageCircle,
             color: "text-emerald-400",
@@ -69,7 +69,7 @@ export default function ContactPage() {
                                     </div>
                                     <div>
                                         <h3 className="text-lg font-bold text-white mb-1">{contact.name}</h3>
-                                        <p className="text-gray-400 text-sm truncate max-[360px]:max-w-[150px] max-w-[200px] sm:max-w-[250px]">{contact.value}</p>
+                                        <p className="text-gray-400 text-sm">{contact.label}</p>
                                     </div>
                                 </CardContent>
                             </Card>

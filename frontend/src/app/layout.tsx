@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
 import { Providers } from '@/components/providers'
+import { Navbar } from '@/components/layout/Navbar'
 
 const neofolia = localFont({
   src: './fonts/neofolia.woff2',
@@ -32,9 +33,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans antialiased ${neofolia.variable} ${behance.variable} ${droid.variable}`}>
         <Providers>
+          <Navbar />
           {children}
         </Providers>
       </body>
     </html>
   )
 }
+
