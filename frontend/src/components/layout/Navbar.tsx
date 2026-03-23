@@ -18,6 +18,9 @@ const NAV_LINKS = [
     { href: "/feedback", label: "Feedback", authOnly: false },
 ]
 
+// Pages where the Navbar should NOT appear
+const HIDDEN_ON = ["/", "/login", "/register", "/complete-profile", "/verify-email"]
+
 export function Navbar() {
     const { user, logout } = useAuthStore()
     const router = useRouter()
@@ -25,6 +28,9 @@ export function Navbar() {
     const [notifications, setNotifications] = useState<any[]>([])
     const [showNotif, setShowNotif] = useState(false)
     const [unread, setUnread] = useState(0)
+
+    // Hide on landing/auth pages
+    if (HIDDEN_ON.some(p => pathname === p || pathname.startsWith(p + "?"))) return null
 
     const homeHref = user
         ? user.role === "ADMIN" ? "/admin/dashboard" : "/student/dashboard"
