@@ -135,7 +135,9 @@ export function Navbar() {
                             </div>
 
                             {/* Right actions */}
-                            <RightActions user={user} unread={unread} showNotif={showNotif} setShowNotif={setShowNotif} notifications={notifications} handleLogout={handleLogout} homeHref={homeHref} />
+                            <div className="flex-1 flex justify-end">
+                                <RightActions user={user} unread={unread} showNotif={showNotif} setShowNotif={setShowNotif} notifications={notifications} handleLogout={handleLogout} homeHref={homeHref} />
+                            </div>
                         </motion.div>
                     ) : (
                         // AFTER SCROLL: full-width sticky bar
@@ -158,7 +160,7 @@ export function Navbar() {
 
                                 {/* Links */}
                                 <div
-                                    className="hidden md:flex items-center gap-0.5 flex-1"
+                                    className="hidden md:flex items-center gap-0.5 flex-1 justify-center"
                                     onMouseLeave={() => setHoveredPath(null)}
                                 >
                                     {resolvedLinks.map(link => {

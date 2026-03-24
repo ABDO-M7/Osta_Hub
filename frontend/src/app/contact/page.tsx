@@ -44,7 +44,7 @@ export default function ContactPage() {
     ]
 
     return (
-        <main className="min-h-screen bg-[#0a0a0f] relative overflow-hidden pt-20 pb-32 flex flex-col items-center justify-center">
+        <main className="min-h-screen relative overflow-hidden pt-20 pb-32 flex flex-col items-center justify-center">
             {/* Background Effects */}
             <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-violet-600/20 blur-[120px] rounded-full pointer-events-none" />
             <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-fuchsia-600/10 blur-[100px] rounded-full pointer-events-none" />

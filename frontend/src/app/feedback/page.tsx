@@ -29,7 +29,7 @@ export default function FeedbackPage() {
     }
 
     return (
-        <main className="min-h-screen bg-[#0a0a0f] relative overflow-hidden py-24 flex items-center justify-center">
+        <main className="min-h-screen relative overflow-hidden py-24 flex items-center justify-center">
             <div className="absolute top-1/4 right-1/4 w-[500px] h-[500px] bg-rose-600/10 blur-[150px] rounded-full pointer-events-none" />
             <div className="absolute bottom-1/4 left-1/4 w-[400px] h-[400px] bg-violet-600/10 blur-[120px] rounded-full pointer-events-none" />
 

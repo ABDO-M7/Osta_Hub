@@ -39,7 +39,7 @@ export default function CoursesPage() {
     }
 
     return (
-        <main className="min-h-screen bg-[#0a0a0f] relative overflow-hidden pt-28 pb-32">
+        <main className="min-h-screen relative overflow-hidden pt-28 pb-32">
             <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] bg-violet-600/10 blur-[150px] rounded-full pointer-events-none" />
             <div className="absolute top-1/2 right-1/4 w-[400px] h-[400px] bg-cyan-600/10 blur-[120px] rounded-full pointer-events-none" />
 
