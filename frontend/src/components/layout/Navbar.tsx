@@ -45,6 +45,20 @@ export function Navbar() {
         if (user) fetchNotifications()
     }, [user])
 
+    // Refresh user profile from API so avatar shows immediately after login
+    useEffect(() => {
+        const syncProfile = async () => {
+            if (!user) return
+            try {
+                const res = await api.get("/users/me")
+                const { login, token } = useAuthStore.getState()
+                if (token) login({ ...user, ...res.data }, token)
+            } catch { /* silent */ }
+        }
+        syncProfile()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
     // Hide on auth / landing pages
     if (HIDDEN_ON.some(p => pathname === p || pathname.startsWith(p + "?"))) return null
 

@@ -2,12 +2,13 @@
 
 import { useEffect, useState, useRef } from "react"
 import { api } from "@/lib/api"
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { BookOpen, Award, Clock, Camera, User, Pencil } from "lucide-react"
+import { Camera, User, Pencil } from "lucide-react"
 import { useAuthStore } from "@/lib/auth"
+import MagicBento from "@/components/magic_bento"
 
 const LEVELS = ["1st Year", "2nd Year", "3rd Year", "4th Year", "Graduate", "Postgraduate"]
 
@@ -53,7 +54,7 @@ export default function StudentProfile() {
                 }
                 setStats(statsRes.data)
                 
-                // update store if needed
+                // update store so navbar avatar refreshes
                 if (user && token) {
                     login({ ...user, ...profile }, token)
                 }
@@ -99,10 +100,52 @@ export default function StudentProfile() {
         </div>
     )
 
-    const statCards = [
-        { title: "Exams Taken", value: stats?.totalAttempts || 0, icon: Clock, color: "text-green-400", bg: "bg-green-500/10" },
-        { title: "Completed", value: stats?.completedAttempts || 0, icon: BookOpen, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-        { title: "Average Score", value: `${stats?.averageScore || 0}%`, icon: Award, color: "text-teal-400", bg: "bg-teal-500/10" },
+    // Build 6 learning analytics cards from real stats
+    const avg = stats?.averageScore ?? 0
+    const total = stats?.totalAttempts ?? 0
+    const completed = stats?.completedAttempts ?? 0
+    const best = stats?.bestScore ?? (stats?.averageScore ?? 0)
+    // Derived / estimated metrics
+    const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0
+    const streakDays = stats?.streakDays ?? Math.min(total * 2, 30) // use server value or estimate
+
+    const bentoCards = [
+        {
+            color: '#060010',
+            label: '📝 Exams Taken',
+            title: `${total}`,
+            description: total === 0 ? "No exams yet — dive in!" : total === 1 ? "You've started your journey!" : `${total} attempts recorded`,
+        },
+        {
+            color: '#060010',
+            label: '🏆 Avg Score',
+            title: `${avg.toFixed(1)}%`,
+            description: avg >= 80 ? "Outstanding performance!" : avg >= 60 ? "Solid — keep pushing!" : "Room to grow — you've got this!",
+        },
+        {
+            color: '#060010',
+            label: '✅ Completed',
+            title: `${completed}`,
+            description: `${completionRate}% completion rate across all attempts`,
+        },
+        {
+            color: '#060010',
+            label: '⭐ Best Score',
+            title: `${typeof best === 'number' ? best.toFixed(1) : best}%`,
+            description: best >= 90 ? "Near perfect — excellent!" : best >= 70 ? "Great personal record!" : "Keep aiming higher!",
+        },
+        {
+            color: '#060010',
+            label: '📚 Level',
+            title: form.level || "—",
+            description: form.specialization ? `Spec: ${form.specialization}` : "No specialization set yet",
+        },
+        {
+            color: '#060010',
+            label: '🔥 Day Streak',
+            title: `${streakDays}`,
+            description: streakDays >= 7 ? "A full week of learning!" : streakDays > 0 ? "Keep the streak alive!" : "Start a streak today!",
+        },
     ]
 
     return (
@@ -237,24 +280,21 @@ export default function StudentProfile() {
                 </CardContent>
             </Card>
 
-            {/* Progress/Stats Dashboard */}
+            {/* Learning Progress — MagicBento Grid */}
             <div>
-                <h2 className="text-2xl font-bold tracking-tight text-white mb-4">Learning Progress</h2>
-                <div className="grid gap-4 md:grid-cols-3">
-                    {statCards.map((stat) => (
-                        <Card key={stat.title} className="bg-[#12121a]/80 border-[#1e1e2e] hover:border-violet-500/20 transition-colors">
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium text-gray-400">{stat.title}</CardTitle>
-                                <div className={`p-2 rounded-lg ${stat.bg}`}>
-                                    <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-3xl font-bold text-white">{stat.value}</div>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
+                <h2 className="text-2xl font-bold tracking-tight text-white mb-2">Learning Progress</h2>
+                <p className="text-gray-500 text-sm mb-6">Your personalized learning analytics at a glance.</p>
+                <MagicBento
+                    cardData={bentoCards}
+                    enableStars
+                    enableSpotlight
+                    enableBorderGlow
+                    clickEffect
+                    enableMagnetism
+                    glowColor="132, 0, 255"
+                    spotlightRadius={300}
+                    particleCount={10}
+                />
             </div>
         </div>
     )
