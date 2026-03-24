@@ -65,7 +65,7 @@ export function Navbar() {
                 {/* ── Logo ── */}
                 <Link href={homeHref} className="flex items-center gap-2.5 group flex-shrink-0">
                     <div className="transition-transform duration-300 group-hover:scale-110 flex items-center justify-center">
-                        <Image src="/icon.svg?v=2" alt="NeuroTron Logo" width={20} height={20} unoptimized />
+                        <Image src="/logo.svg" alt="NeuroTron Logo" width={20} height={20} unoptimized />
                     </div>
                     <Logo className="text-lg tracking-tight text-white" />
                 </Link>

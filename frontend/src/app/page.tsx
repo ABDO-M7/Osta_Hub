@@ -39,7 +39,7 @@ export default function HomePage() {
             <nav className="relative z-20 flex items-center justify-between px-8 py-6">
                 <div className="flex items-center gap-2">
                     <div className="flex items-center justify-center">
-                        <Image src="/icon.svg?v=2" alt="NeuroTron Logo" width={32} height={32} unoptimized />
+                        <Image src="/logo.svg" alt="NeuroTron Logo" width={32} height={32} unoptimized />
                     </div>
                     <Logo className="text-xl tracking-tight" />
                 </div>
