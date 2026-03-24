@@ -82,6 +82,25 @@ export class LessonsService {
             create: { userId, lessonId, completed: true }
         });
 
+        // Update overall Enrollment progress for the subject
+        const subjectId = lesson.subjectId;
+        const totalLessons = await this.prisma.lesson.count({ where: { subjectId } });
+        
+        const completedLessonsInSubject = await this.prisma.lessonProgress.count({
+            where: {
+                userId,
+                completed: true,
+                lesson: { subjectId }
+            }
+        });
+
+        const progressPercent = totalLessons > 0 ? (completedLessonsInSubject / totalLessons) * 100 : 0;
+
+        await this.prisma.enrollment.updateMany({
+            where: { userId, subjectId },
+            data: { progress: progressPercent }
+        });
+
         // Handle streak logic
         const user = await this.prisma.user.findUnique({ where: { id: userId } });
         if (user) {
