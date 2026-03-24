@@ -78,48 +78,50 @@ export function Navbar() {
                 </div>
 
                 {/* ── 2. Centre links (Wrapped in the glass pill) ── */}
-                <div 
-                    className="hidden md:flex flex-[2] items-center justify-center gap-2 relative rounded-full border border-white/10 bg-[#070712b3] backdrop-blur-2xl shadow-[0_8px_40px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.04)_inset] px-4 py-2"
-                    onMouseLeave={() => setHoveredPath(null)}
-                >
-                    {resolvedLinks.map(link => {
-                        const active = isActive(link.href)
-                        const isHovered = hoveredPath === link.href
+                <div className="hidden md:flex flex-[2] items-center justify-center">
+                    <div 
+                        className="flex items-center gap-1 relative rounded-full border border-white/10 bg-[#070712b3] backdrop-blur-2xl shadow-[0_8px_40px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.04)_inset] p-1.5"
+                        onMouseLeave={() => setHoveredPath(null)}
+                    >
+                        {resolvedLinks.map(link => {
+                            const active = isActive(link.href)
+                            const isHovered = hoveredPath === link.href
 
-                        return (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                onMouseEnter={() => setHoveredPath(link.href)}
-                                className={`relative px-4 py-1.5 text-sm font-medium transition-colors duration-200 z-10
-                                    ${active || isHovered
-                                        ? "text-white"
-                                        : "text-gray-400"
-                                    }`}
-                            >
-                                {/* Framer motion sliding background */}
-                                {isHovered && (
-                                    <motion.div
-                                        layoutId="navbar-hover-bg"
-                                        className="absolute inset-0 rounded-full bg-white/10 shadow-inner shadow-white/5 border border-white/10"
-                                        initial={false}
-                                        transition={{ 
-                                            type: "spring", 
-                                            stiffness: 400, 
-                                            damping: 30,
-                                            mass: 0.8 
+                            return (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    onMouseEnter={() => setHoveredPath(link.href)}
+                                    className={`relative px-4 py-1.5 text-sm font-medium transition-colors duration-200 z-10
+                                        ${active || isHovered
+                                            ? "text-white"
+                                            : "text-gray-400"
+                                        }`}
+                                >
+                                    {/* Framer motion sliding background */}
+                                    {isHovered && (
+                                        <motion.div
+                                            layoutId="navbar-hover-bg"
+                                            className="absolute inset-0 rounded-full bg-white/10 shadow-inner shadow-white/5 border border-white/10"
+                                            initial={false}
+                                            transition={{ 
+                                                type: "spring", 
+                                                stiffness: 400, 
+                                                damping: 30,
+                                                mass: 0.8 
                                         }}
-                                    />
-                                )}
-                                <span className="relative z-20">{link.label}</span>
-                                
-                                {/* Active indicator dot */}
-                                {active && (
-                                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.8)] z-20" />
-                                )}
-                            </Link>
-                        )
-                    })}
+                                        />
+                                    )}
+                                    <span className="relative z-20">{link.label}</span>
+                                    
+                                    {/* Active indicator dot */}
+                                    {active && (
+                                        <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.8)] z-20" />
+                                    )}
+                                </Link>
+                            )
+                        })}
+                    </div>
                 </div>
 
                 {/* ── 3. Right actions (Outside glass pill) ── */}
