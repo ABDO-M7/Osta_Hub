@@ -32,6 +32,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`font-sans antialiased ${neofolia.variable} ${behance.variable} ${droid.variable}`}>
+        {/* Global background — student/lessons override with their own layout */}
+        <div
+          className="fixed inset-0 -z-20 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url('https://images.unsplash.com/photo-1620121692029-d088224ddc74?q=80&w=3432&auto=format&fit=crop')` }}
+        />
+        <div className="fixed inset-0 -z-20 bg-[#0a0a0f]/82" />
+
         <Providers>
           <Navbar />
           {children}
