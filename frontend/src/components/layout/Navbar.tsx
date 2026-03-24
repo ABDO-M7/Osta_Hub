@@ -62,23 +62,24 @@ export function Navbar() {
         href === homeHref ? pathname === href : pathname.startsWith(href)
 
     return (
-        /* Floating pill wrapper — sits above page content */
+        /* Floating wrapper over the page */
         <div className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
-            <nav className="pointer-events-auto w-full max-w-7xl rounded-full border border-white/10 bg-[#07071280] backdrop-blur-2xl shadow-[0_8px_40px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.04)_inset] flex items-center px-6 h-16 gap-4">
+            {/* Main nav width container: 100% up to max-w-7xl, no background so children float free */}
+            <nav className="pointer-events-auto w-full max-w-7xl flex items-center h-16 gap-4">
 
-                {/* ── 1. Logo (Left) ── */}
-                <div className="flex-1 flex justify-start">
+                {/* ── 1. Logo (Left, outside glass pill) ── */}
+                <div className="flex-1 flex justify-start pl-2">
                     <Link href={homeHref} className="flex items-center gap-2.5 group w-fit">
-                        <div className="transition-transform duration-300 group-hover:scale-110 flex items-center justify-center">
+                        <div className="transition-transform duration-300 group-hover:scale-110 flex items-center justify-center p-2 rounded-xl bg-black/20 backdrop-blur-md border border-white/10 shadow-lg">
                             <Image src="/logo.svg" alt="NeuroTron Logo" width={22} height={22} priority unoptimized />
                         </div>
-                        <Logo className="text-xl tracking-tight text-white hidden sm:block" />
+                        <Logo className="text-xl tracking-tight text-white hidden sm:block drop-shadow-md" />
                     </Link>
                 </div>
 
-                {/* ── 2. Centre links ── */}
+                {/* ── 2. Centre links (Wrapped in the glass pill) ── */}
                 <div 
-                    className="flex-[2] hidden md:flex items-center justify-center gap-2 relative"
+                    className="hidden md:flex flex-[2] items-center justify-center gap-2 relative rounded-full border border-white/10 bg-[#070712b3] backdrop-blur-2xl shadow-[0_8px_40px_rgba(0,0,0,0.5),0_0_0_1px_rgba(255,255,255,0.04)_inset] px-4 py-2"
                     onMouseLeave={() => setHoveredPath(null)}
                 >
                     {resolvedLinks.map(link => {
@@ -90,7 +91,7 @@ export function Navbar() {
                                 key={link.href}
                                 href={link.href}
                                 onMouseEnter={() => setHoveredPath(link.href)}
-                                className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 z-10
+                                className={`relative px-4 py-1.5 text-sm font-medium transition-colors duration-200 z-10
                                     ${active || isHovered
                                         ? "text-white"
                                         : "text-gray-400"
@@ -121,15 +122,15 @@ export function Navbar() {
                     })}
                 </div>
 
-                {/* ── 3. Right actions ── */}
-                <div className="flex-1 flex justify-end items-center gap-3">
+                {/* ── 3. Right actions (Outside glass pill) ── */}
+                <div className="flex-1 flex justify-end items-center gap-3 pr-2">
                     {user ? (
                         <>
                             {/* Bell */}
                             <div className="relative">
                                 <button
                                     onClick={() => setShowNotif(v => !v)}
-                                    className="relative w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200"
+                                    className="relative w-10 h-10 rounded-full flex items-center justify-center text-gray-300 hover:text-white bg-black/20 backdrop-blur-md border border-white/10 shadow-lg hover:bg-white/10 transition-all duration-200"
                                 >
                                     <Bell className="w-5 h-5" />
                                     {unread > 0 && (
@@ -166,7 +167,7 @@ export function Navbar() {
                             {/* Avatar */}
                             {user.role === "STUDENT" ? (
                                 <Link href="/student/profile" className="flex items-center gap-2 group">
-                                    <div className="w-9 h-9 rounded-full overflow-hidden border border-white/15 group-hover:border-violet-400/80 transition-all duration-200 group-hover:scale-105 bg-violet-500/20 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 shadow-lg group-hover:border-violet-400/80 transition-all duration-200 group-hover:scale-105 bg-black/20 backdrop-blur-md flex items-center justify-center">
                                         {user.avatar
                                             ? <img src={user.avatar} alt="avatar" className="w-full h-full object-cover" />
                                             : <UserIcon className="w-5 h-5 text-violet-300" />}
@@ -174,7 +175,7 @@ export function Navbar() {
                                 </Link>
                             ) : (
                                 <div className="flex items-center gap-2">
-                                    <div className="w-9 h-9 rounded-full overflow-hidden border border-white/15 bg-violet-500/20 flex items-center justify-center">
+                                    <div className="w-10 h-10 rounded-full overflow-hidden border border-white/10 shadow-lg bg-black/20 backdrop-blur-md flex items-center justify-center">
                                         {user.avatar
                                             ? <img src={user.avatar} alt="avatar" className="w-full h-full object-cover" />
                                             : <UserIcon className="w-5 h-5 text-violet-300" />}
@@ -187,14 +188,14 @@ export function Navbar() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={handleLogout}
-                                className="w-10 h-10 p-0 rounded-full text-gray-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200"
+                                className="w-10 h-10 p-0 rounded-full text-gray-400 bg-black/20 backdrop-blur-md border border-white/10 shadow-lg hover:text-rose-400 hover:bg-rose-500/10 transition-all duration-200"
                             >
-                                <LogOut className="h-5 w-5" />
+                                <LogOut className="h-4 w-4" />
                             </Button>
                         </>
                     ) : (
                         <Link href="/login">
-                            <Button size="sm" className="rounded-full bg-violet-600 hover:bg-violet-700 text-white text-sm px-5 h-9 transition-all duration-200">
+                            <Button size="sm" className="rounded-full bg-violet-600 hover:bg-violet-700 text-white shadow-lg text-sm px-5 h-10 transition-all duration-200">
                                 Sign In
                             </Button>
                         </Link>

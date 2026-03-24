@@ -40,28 +40,6 @@ const features = [
 export default function AboutPage() {
     return (
         <main className="min-h-screen" style={{ background: "#000000", color: "#f7ebf9" }}>
-            {/* ─── Navbar ───────────────────────────────────────────────── */}
-            <nav className="flex items-center justify-between px-8 py-6 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-                <Link href="/" className="flex items-center gap-2">
-                    <div className="p-2 rounded-xl" style={{ background: "rgba(57,12,237,0.3)", border: "1px solid rgba(57,12,237,0.5)", backdropFilter: "blur(12px)" }}>
-                        <Image src="/icon.svg" alt="NeuroTron Logo" width={22} height={22} />
-                    </div>
-                    <Logo className="text-xl tracking-tight" />
-                </Link>
-                <Link
-                    href="/login"
-                    className="text-sm font-semibold px-5 py-2 rounded-xl transition-all duration-300"
-                    style={{
-                        background: "rgba(57,12,237,0.25)",
-                        border: "1px solid rgba(57,12,237,0.6)",
-                        backdropFilter: "blur(16px)",
-                        color: "#f7ebf9",
-                    }}
-                >
-                    Get Started →
-                </Link>
-            </nav>
-
             {/* ─── Hero ─────────────────────────────────────────────────── */}
             <section className="text-center px-4 py-24 relative overflow-hidden">
                 {/* Glow */}
