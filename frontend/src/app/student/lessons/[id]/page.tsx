@@ -15,6 +15,7 @@ export default function LessonPage() {
     const id = params?.id
     const [lesson, setLesson] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const [showAdvanced, setShowAdvanced] = useState(true)
 
     useEffect(() => {
         if (!id) return
@@ -45,17 +46,34 @@ export default function LessonPage() {
                 Back to {lesson.subject?.name || 'Subject'}
             </Link>
 
-            <header className="mb-10 border-b pb-6">
-                <div className="text-sm font-semibold tracking-wider uppercase text-gray-500 mb-2">Lesson {lesson.order}</div>
-                <h1 className="text-4xl font-extrabold tracking-tight text-white">{lesson.title}</h1>
+            <header className="mb-10 border-b border-white/10 pb-6">
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                    <div>
+                        <div className="text-sm font-semibold tracking-wider uppercase text-gray-500 mb-2">Lesson {lesson.order}</div>
+                        <h1 className="text-4xl font-extrabold tracking-tight text-white">{lesson.title}</h1>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 bg-[#1e1e2e]/50 px-4 py-2.5 rounded-full border border-white/5 shadow-inner">
+                        <span className="text-sm text-gray-400 font-medium select-none">Show Advanced</span>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" className="sr-only peer" checked={showAdvanced} onChange={e => setShowAdvanced(e.target.checked)} />
+                            <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
+                        </label>
+                    </div>
+                </div>
             </header>
 
             <div className="space-y-4">
                 {(() => {
-                    if (!lesson.blocks || lesson.blocks.length === 0) {
+                    let blocksToRender = lesson.blocks || [];
+                    if (!showAdvanced) {
+                        blocksToRender = blocksToRender.filter((b: any) => !b.content?.isAdvanced);
+                    }
+
+                    if (blocksToRender.length === 0) {
                         return (
-                            <div className="p-8 border-2 border-dashed rounded-xl text-center text-gray-500">
-                                This lesson has no content blocks yet.
+                            <div className="p-8 border-2 border-dashed border-white/10 rounded-xl text-center text-gray-500">
+                                This lesson has no content blocks yet (or all advanced content is hidden).
                             </div>
                         )
                     }
@@ -63,7 +81,7 @@ export default function LessonPage() {
                     const groups: any[] = [];
                     let currentGroup: any = { type: 'root', items: [] };
                     
-                    lesson.blocks.forEach((block: any) => {
+                    blocksToRender.forEach((block: any) => {
                         if (block.type === 'section') {
                             if (currentGroup.type !== 'root' || currentGroup.items.length > 0) {
                                 groups.push(currentGroup);

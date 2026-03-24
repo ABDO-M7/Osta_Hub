@@ -8,6 +8,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ArrowLeft, Save, Trash2, GripVertical, Image as ImageIcon, HelpCircle, Terminal, Code, AlignLeft, EyeOff, Play, Plus, FolderOpen } from "lucide-react"
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import dynamic from 'next/dynamic'
 import 'react-quill/dist/quill.snow.css'
 
@@ -294,6 +297,22 @@ function EditorContent() {
         setBlocks(nb)
     }
 
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    )
+
+    const handleDragEnd = (event: any) => {
+        const { active, over } = event
+        if (over && active.id !== over.id) {
+            setBlocks((items) => {
+                const oldIndex = items.findIndex(x => x.id === active.id)
+                const newIndex = items.findIndex(x => x.id === over.id)
+                return arrayMove(items, oldIndex, newIndex)
+            })
+        }
+    }
+
     if (loading) return <div className="p-8 text-center text-gray-500">Loading editor...</div>
 
     return (
@@ -320,252 +339,20 @@ function EditorContent() {
 
             {/* Block list */}
             <div className="space-y-3">
-                {blocks.map((block) => {
-                    const isPreviewing = previewSet.has(block.id)
-                    return (
-                        <div key={block.id} className="relative group">
-                            {/* Move handles */}
-                            <div className="absolute -left-12 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-500 hover:text-blue-400" onClick={() => moveBlock(block.id, -1)}>
-                                    <ArrowLeft className="w-3 h-3 rotate-90" />
-                                </Button>
-                                <div className="h-7 w-7 flex items-center justify-center text-gray-600">
-                                    <GripVertical className="w-3 h-3" />
-                                </div>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-500 hover:text-blue-400" onClick={() => moveBlock(block.id, 1)}>
-                                    <ArrowLeft className="w-3 h-3 -rotate-90" />
-                                </Button>
-                            </div>
-
-                            <Card className={`border transition-all duration-200 ${isPreviewing ? 'border-indigo-500/30 bg-[#0e0e1a]' : 'border-white/10 bg-[#13131f]'}`}>
-                                {/* Header bar */}
-                                <div className={`flex items-center justify-between px-4 py-2 border-b rounded-t-lg
-                                    ${isPreviewing ? 'border-indigo-500/20 bg-indigo-500/5' : 'border-white/5'}`}>
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
-                                            {block.type.replace(/-/g, ' ')}
-                                        </span>
-                                        {isPreviewing && (
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">
-                                                Preview
-                                            </span>
-                                        )}
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        {/* Advanced toggle */}
-                                        <label className="flex items-center gap-1.5 cursor-pointer">
-                                            <div className="relative">
-                                                <input type="checkbox" className="sr-only"
-                                                    checked={!!block.content.isAdvanced}
-                                                    onChange={e => updateBlock(block.id, { ...block.content, isAdvanced: e.target.checked })}
-                                                />
-                                                <div className={`w-7 h-3.5 rounded-full transition-colors ${block.content.isAdvanced ? 'bg-violet-500' : 'bg-gray-600'}`} />
-                                                <div className={`absolute left-0.5 top-0.5 bg-white w-2.5 h-2.5 rounded-full shadow transition-transform ${block.content.isAdvanced ? 'translate-x-3.5' : ''}`} />
-                                            </div>
-                                            <span className="text-[11px] text-gray-500 select-none">Advanced</span>
-                                        </label>
-                                        <div className="w-px h-3 bg-white/10" />
-                                        {/* Preview / Edit toggle */}
-                                        <Button variant="ghost" size="sm"
-                                            className={`h-6 px-2 text-[11px] gap-1 ${isPreviewing ? 'text-indigo-300 hover:text-white' : 'text-gray-400 hover:text-white'}`}
-                                            onClick={() => togglePreview(block.id)}
-                                        >
-                                            {isPreviewing ? <><EyeOff className="w-3 h-3" />Edit</> : <><Play className="w-3 h-3" />Preview</>}
-                                        </Button>
-                                        <div className="w-px h-3 bg-white/10" />
-                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500/50 hover:text-red-400 hover:bg-red-500/10"
-                                            onClick={() => removeBlock(block.id)}>
-                                            <Trash2 className="w-3 h-3" />
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                <CardContent className="p-5">
-                                    {/* PREVIEW */}
-                                    {isPreviewing && (
-                                        <div className="min-h-[60px] cursor-pointer" onClick={() => togglePreview(block.id)} title="Click to edit">
-                                            <BlockPreview block={block} />
-                                        </div>
-                                    )}
-
-                                    {/* EDIT */}
-                                    {!isPreviewing && (
-                                        <>
-                                            {block.type === 'paragraph' && (
-                                                <RichTextEditor
-                                                    value={block.content.text}
-                                                    onChange={val => updateBlock(block.id, { ...block.content, text: val })}
-                                                />
-                                            )}
-
-                                            {block.type === 'image' && (() => {
-                                                const images = Array.isArray(block.content.images) 
-                                                    ? block.content.images 
-                                                    : (block.content.url ? [{ url: block.content.url, alt: block.content.alt || '' }] : [{ url: '', alt: '' }]);
-                                            
-                                                const updateImages = (newImages: any[]) => updateBlock(block.id, { ...block.content, images: newImages, url: undefined, alt: undefined });
-                                            
-                                                return (
-                                                    <div className="space-y-4">
-                                                        {images.map((img: any, i: number) => (
-                                                            <div key={i} className="space-y-3 p-4 border border-white/5 bg-black/10 rounded-xl relative group">
-                                                                {images.length > 1 && (
-                                                                    <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-6 w-6 text-red-500/50 hover:text-red-400 opacity-0 group-hover:opacity-100" onClick={() => {
-                                                                        const newImgs = [...images];
-                                                                        newImgs.splice(i, 1);
-                                                                        updateImages(newImgs);
-                                                                    }}>
-                                                                        <Trash2 className="w-3 h-3" />
-                                                                    </Button>
-                                                                )}
-                                                                
-                                                                <div className="flex gap-2 pr-6">
-                                                                    <Input placeholder="Image URL (or upload)" value={img.url}
-                                                                        onChange={e => {
-                                                                            const newImgs = [...images];
-                                                                            newImgs[i].url = e.target.value;
-                                                                            updateImages(newImgs);
-                                                                        }}
-                                                                        className="bg-[#0f0f1a] border-white/10 text-gray-200 placeholder:text-gray-600" />
-                                                                    
-                                                                    <div className="relative shrink-0">
-                                                                        <input 
-                                                                            type="file" 
-                                                                            accept="image/*" 
-                                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                                                            onChange={(e) => {
-                                                                                const file = e.target.files?.[0];
-                                                                                if (file) {
-                                                                                    const reader = new FileReader();
-                                                                                    reader.onload = () => {
-                                                                                        const newImgs = [...images];
-                                                                                        newImgs[i].url = reader.result;
-                                                                                        updateImages(newImgs);
-                                                                                    };
-                                                                                    reader.readAsDataURL(file);
-                                                                                }
-                                                                            }}
-                                                                        />
-                                                                        <Button type="button" variant="secondary" className="bg-[#1a1a2e] hover:bg-[#2a2a4e] text-indigo-300 border border-indigo-500/30">
-                                                                            Upload Image
-                                                                        </Button>
-                                                                    </div>
-                                                                </div>
-                                                                <Input placeholder="Alt text (optional)" value={img.alt || ''}
-                                                                    onChange={e => {
-                                                                        const newImgs = [...images];
-                                                                        newImgs[i].alt = e.target.value;
-                                                                        updateImages(newImgs);
-                                                                    }}
-                                                                    className="bg-[#0f0f1a] border-white/10 text-gray-200 placeholder:text-gray-600" />
-                                                                {img.url && (
-                                                                    <div className="rounded-lg border border-white/10 bg-black/20 flex justify-center p-2 mt-2">
-                                                                        <img src={img.url} alt="Preview" className="max-h-[300px] object-contain"
-                                                                            onError={(e: any) => { e.target.style.display = 'none' }} />
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        ))}
-                                                        
-                                                        <Button variant="outline" size="sm" className="w-full border-dashed border-white/20 text-gray-400 hover:text-white bg-transparent" onClick={() => updateImages([...images, { url: '', alt: '' }])}>
-                                                            <Plus className="w-4 h-4 mr-2" /> Add Another Image
-                                                        </Button>
-                                                    </div>
-                                                )
-                                            })()}
-
-                                            {block.type === 'code' && (
-                                                <div className="space-y-3">
-                                                    <div className="flex items-center gap-2">
-                                                        <Code className="w-4 h-4 text-gray-500" />
-                                                        <select value={block.content.language || 'javascript'}
-                                                            onChange={e => updateBlock(block.id, { ...block.content, language: e.target.value })}
-                                                            className="text-sm bg-[#0f0f1a] border border-white/10 text-gray-300 rounded-md px-2 py-1">
-                                                            {['javascript', 'python', 'typescript', 'html', 'css', 'cpp', 'java'].map(l => (
-                                                                <option key={l} value={l}>{l}</option>
-                                                            ))}
-                                                        </select>
-                                                    </div>
-                                                    <textarea
-                                                        className="w-full h-48 p-4 text-gray-200 bg-[#1e1e1e] font-mono text-sm border border-white/10 rounded-md focus:ring-2 focus:ring-violet-500 resize-y outline-none"
-                                                        placeholder={`Enter ${block.content.language || 'code'} here...`}
-                                                        value={block.content.code || ''}
-                                                        spellCheck="false"
-                                                        onChange={e => updateBlock(block.id, { ...block.content, code: e.target.value })}
-                                                    />
-                                                </div>
-                                            )}
-
-                                            {block.type === 'code-execution' && (
-                                                <div className="space-y-2">
-                                                    <p className="text-xs text-gray-500 flex items-center gap-1"><Terminal className="w-3 h-3" /> Default starter code for JS Sandbox</p>
-                                                    <textarea
-                                                        className="w-full h-44 p-3 text-gray-200 bg-[#12121a] font-mono text-sm border border-[#1e1e2e] rounded-md focus:ring-green-500 resize-y outline-none"
-                                                        value={block.content.code}
-                                                        spellCheck="false"
-                                                        onChange={e => updateBlock(block.id, { ...block.content, code: e.target.value })}
-                                                    />
-                                                </div>
-                                            )}
-
-                                            {block.type === 'html-sandbox' && (
-                                                <div className="space-y-2">
-                                                    <p className="text-xs text-gray-500 flex items-center gap-1"><Code className="w-3 h-3" /> Default HTML/CSS/JS for Visualization</p>
-                                                    <textarea
-                                                        className="w-full h-56 p-3 text-gray-200 bg-[#12121a] font-mono text-sm border border-[#1e1e2e] rounded-md focus:ring-purple-500 resize-y outline-none"
-                                                        value={block.content.html}
-                                                        spellCheck="false"
-                                                        onChange={e => updateBlock(block.id, { ...block.content, html: e.target.value })}
-                                                    />
-                                                </div>
-                                            )}
-
-                                            {block.type === 'quiz' && (
-                                                <div className="space-y-4">
-                                                    <Input placeholder="Question text..." value={block.content.question}
-                                                        onChange={e => updateBlock(block.id, { ...block.content, question: e.target.value })}
-                                                        className="font-medium bg-[#0f0f1a] border-white/10 text-gray-200 placeholder:text-gray-600" />
-                                                    <div className="space-y-2 pl-4 border-l-2 border-white/10 ml-2">
-                                                        {block.content.options.map((opt: string, optIdx: number) => (
-                                                            <div key={optIdx} className="flex items-center gap-3">
-                                                                <input type="radio" name={`correct-${block.id}`}
-                                                                    checked={block.content.correctIndex === optIdx}
-                                                                    onChange={() => updateBlock(block.id, { ...block.content, correctIndex: optIdx })}
-                                                                    className="w-4 h-4 text-blue-500" />
-                                                                <Input placeholder={`Option ${optIdx + 1}`} value={opt}
-                                                                    onChange={e => {
-                                                                        const opts = [...block.content.options]
-                                                                        opts[optIdx] = e.target.value
-                                                                        updateBlock(block.id, { ...block.content, options: opts })
-                                                                    }}
-                                                                    className="bg-[#0f0f1a] border-white/10 text-gray-200 placeholder:text-gray-600" />
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            )}
-                                            {block.type === 'section' && (
-                                                <div className="space-y-3 p-4 bg-indigo-900/10 border border-indigo-500/20 rounded-xl">
-                                                    <div className="flex items-center gap-2 mb-2 text-indigo-400 font-semibold text-sm uppercase tracking-wider">
-                                                        <FolderOpen className="w-4 h-4" />
-                                                        Collapsible Section Header
-                                                    </div>
-                                                    <Input 
-                                                        value={block.content.title}
-                                                        onChange={e => updateBlock(block.id, { ...block.content, title: e.target.value })}
-                                                        className="bg-[#0f0f1a] border-white/10 text-xl font-bold text-gray-200 placeholder:text-gray-600 h-14"
-                                                        placeholder="Type section title here..."
-                                                    />
-                                                    <p className="text-xs text-gray-500">All blocks placed below this section will be grouped inside it.</p>
-                                                </div>
-                                            )}
-                                        </>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </div>
-                    )
-                })}
+                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                    <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
+                        {blocks.map((block) => (
+                            <SortableBlockItem
+                                key={block.id}
+                                block={block}
+                                isPreviewing={previewSet.has(block.id)}
+                                togglePreview={togglePreview}
+                                updateBlock={updateBlock}
+                                removeBlock={removeBlock}
+                            />
+                        ))}
+                    </SortableContext>
+                </DndContext>
 
                 {/* Add block toolbar */}
                 <div className="pt-4 flex justify-center">
@@ -588,6 +375,248 @@ function EditorContent() {
                     </div>
                 </div>
             </div>
+        </div>
+    )
+}
+
+function SortableBlockItem({ block, isPreviewing, togglePreview, updateBlock, removeBlock }: any) {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: block.id })
+    const style = { transform: CSS.Transform.toString(transform), transition }
+
+    return (
+        <div ref={setNodeRef} style={style} className="relative group">
+            {/* Move handles */}
+            <div className="absolute -left-10 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                <div {...attributes} {...listeners} className="h-8 w-8 rounded-md bg-[#1a1a2e] border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/5 cursor-grab active:cursor-grabbing shadow-lg">
+                    <GripVertical className="w-4 h-4" />
+                </div>
+            </div>
+
+            <Card className={`border transition-all duration-200 ${isPreviewing ? 'border-indigo-500/30 bg-[#0e0e1a]' : 'border-white/10 bg-[#13131f]'}`}>
+                {/* Header bar */}
+                <div className={`flex items-center justify-between px-4 py-2 border-b rounded-t-lg
+                    ${isPreviewing ? 'border-indigo-500/20 bg-indigo-500/5' : 'border-white/5'}`}>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                            {block.type.replace(/-/g, ' ')}
+                        </span>
+                        {isPreviewing && (
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full">
+                                Preview
+                            </span>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                        {/* Advanced toggle */}
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                            <div className="relative">
+                                <input type="checkbox" className="sr-only"
+                                    checked={!!block.content.isAdvanced}
+                                    onChange={e => updateBlock(block.id, { ...block.content, isAdvanced: e.target.checked })}
+                                />
+                                <div className={`w-7 h-3.5 rounded-full transition-colors ${block.content.isAdvanced ? 'bg-violet-500' : 'bg-gray-600'}`} />
+                                <div className={`absolute left-0.5 top-0.5 bg-white w-2.5 h-2.5 rounded-full shadow transition-transform ${block.content.isAdvanced ? 'translate-x-3.5' : ''}`} />
+                            </div>
+                            <span className="text-[11px] text-gray-500 select-none">Advanced</span>
+                        </label>
+                        <div className="w-px h-3 bg-white/10" />
+                        {/* Preview / Edit toggle */}
+                        <Button variant="ghost" size="sm"
+                            className={`h-6 px-2 text-[11px] gap-1 ${isPreviewing ? 'text-indigo-300 hover:text-white' : 'text-gray-400 hover:text-white'}`}
+                            onClick={() => togglePreview(block.id)}
+                        >
+                            {isPreviewing ? <><EyeOff className="w-3 h-3" />Edit</> : <><Play className="w-3 h-3" />Preview</>}
+                        </Button>
+                        <div className="w-px h-3 bg-white/10" />
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500/50 hover:text-red-400 hover:bg-red-500/10"
+                            onClick={() => removeBlock(block.id)}>
+                            <Trash2 className="w-3 h-3" />
+                        </Button>
+                    </div>
+                </div>
+
+                <CardContent className="p-5">
+                    {/* PREVIEW */}
+                    {isPreviewing && (
+                        <div className="min-h-[60px] cursor-pointer" onClick={() => togglePreview(block.id)} title="Click to edit">
+                            <BlockPreview block={block} />
+                        </div>
+                    )}
+
+                    {/* EDIT */}
+                    {!isPreviewing && (
+                        <>
+                            {block.type === 'paragraph' && (
+                                <RichTextEditor
+                                    value={block.content.text}
+                                    onChange={(val: string) => updateBlock(block.id, { ...block.content, text: val })}
+                                />
+                            )}
+
+                            {block.type === 'image' && (() => {
+                                const images = Array.isArray(block.content.images)
+                                    ? block.content.images
+                                    : (block.content.url ? [{ url: block.content.url, alt: block.content.alt || '' }] : [])
+
+                                const updateImages = (newImages: any[]) => updateBlock(block.id, { ...block.content, images: newImages });
+
+                                return (
+                                    <div className="space-y-4">
+                                        {images.map((img: any, i: number) => (
+                                            <div key={i} className="space-y-2 p-4 border border-white/5 bg-[#12121a] rounded-lg relative">
+                                                <div className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-2">Image {i + 1}</div>
+                                                
+                                                {images.length > 1 && (
+                                                    <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-6 w-6 text-red-500/40 hover:text-red-500"
+                                                        onClick={() => updateImages(images.filter((_: any, idx: number) => idx !== i))}>
+                                                        <Trash2 className="w-3 h-3" />
+                                                    </Button>
+                                                )}
+                                                
+                                                <div className="flex gap-2 pr-6">
+                                                    <Input placeholder="Image URL (or upload)" value={img.url}
+                                                        onChange={e => {
+                                                            const newImgs = [...images];
+                                                            newImgs[i].url = e.target.value;
+                                                            updateImages(newImgs);
+                                                        }}
+                                                        className="bg-[#0f0f1a] border-white/10 text-gray-200 placeholder:text-gray-600" />
+                                                    
+                                                    <div className="relative shrink-0">
+                                                        <input 
+                                                            type="file" 
+                                                            accept="image/*" 
+                                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                            onChange={(e) => {
+                                                                const file = e.target.files?.[0];
+                                                                if (file) {
+                                                                    const reader = new FileReader();
+                                                                    reader.onload = () => {
+                                                                        const newImgs = [...images];
+                                                                        newImgs[i].url = reader.result;
+                                                                        updateImages(newImgs);
+                                                                    };
+                                                                    reader.readAsDataURL(file);
+                                                                }
+                                                            }}
+                                                        />
+                                                        <Button type="button" variant="secondary" className="bg-[#1a1a2e] hover:bg-[#2a2a4e] text-indigo-300 border border-indigo-500/30">
+                                                            Upload Image
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                <Input placeholder="Alt text (optional)" value={img.alt || ''}
+                                                    onChange={e => {
+                                                        const newImgs = [...images];
+                                                        newImgs[i].alt = e.target.value;
+                                                        updateImages(newImgs);
+                                                    }}
+                                                    className="bg-[#0f0f1a] border-white/10 text-gray-200 placeholder:text-gray-600" />
+                                                {img.url && (
+                                                    <div className="rounded-lg border border-white/10 bg-black/20 flex justify-center p-2 mt-2">
+                                                        <img src={img.url} alt="Preview" className="max-h-[300px] object-contain"
+                                                            onError={(e: any) => { e.target.style.display = 'none' }} />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                        
+                                        <Button variant="outline" size="sm" className="w-full border-dashed border-white/20 text-gray-400 hover:text-white bg-transparent" onClick={() => updateImages([...images, { url: '', alt: '' }])}>
+                                            <Plus className="w-4 h-4 mr-2" /> Add Another Image
+                                        </Button>
+                                    </div>
+                                )
+                            })()}
+
+                            {block.type === 'code' && (
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2">
+                                        <Code className="w-4 h-4 text-gray-500" />
+                                        <select value={block.content.language || 'javascript'}
+                                            onChange={e => updateBlock(block.id, { ...block.content, language: e.target.value })}
+                                            className="text-sm bg-[#0f0f1a] border border-white/10 text-gray-300 rounded-md px-2 py-1">
+                                            {['javascript', 'python', 'typescript', 'html', 'css', 'cpp', 'java'].map(l => (
+                                                <option key={l} value={l}>{l}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <textarea
+                                        className="w-full h-48 p-4 text-gray-200 bg-[#1e1e1e] font-mono text-sm border border-white/10 rounded-md focus:ring-2 focus:ring-violet-500 resize-y outline-none"
+                                        placeholder={`Enter ${block.content.language || 'code'} here...`}
+                                        value={block.content.code || ''}
+                                        spellCheck="false"
+                                        onChange={e => updateBlock(block.id, { ...block.content, code: e.target.value })}
+                                    />
+                                </div>
+                            )}
+
+                            {block.type === 'code-execution' && (
+                                <div className="space-y-2">
+                                    <p className="text-xs text-gray-500 flex items-center gap-1"><Terminal className="w-3 h-3" /> Default starter code for JS Sandbox</p>
+                                    <textarea
+                                        className="w-full h-44 p-3 text-gray-200 bg-[#12121a] font-mono text-sm border border-[#1e1e2e] rounded-md focus:ring-green-500 resize-y outline-none"
+                                        value={block.content.code}
+                                        spellCheck="false"
+                                        onChange={e => updateBlock(block.id, { ...block.content, code: e.target.value })}
+                                    />
+                                </div>
+                            )}
+
+                            {block.type === 'html-sandbox' && (
+                                <div className="space-y-2">
+                                    <p className="text-xs text-gray-500 flex items-center gap-1"><Code className="w-3 h-3" /> Default HTML/CSS/JS for Visualization</p>
+                                    <textarea
+                                        className="w-full h-56 p-3 text-gray-200 bg-[#12121a] font-mono text-sm border border-[#1e1e2e] rounded-md focus:ring-purple-500 resize-y outline-none"
+                                        value={block.content.html}
+                                        spellCheck="false"
+                                        onChange={e => updateBlock(block.id, { ...block.content, html: e.target.value })}
+                                    />
+                                </div>
+                            )}
+
+                            {block.type === 'quiz' && (
+                                <div className="space-y-4">
+                                    <Input placeholder="Question text..." value={block.content.question}
+                                        onChange={e => updateBlock(block.id, { ...block.content, question: e.target.value })}
+                                        className="font-medium bg-[#0f0f1a] border-white/10 text-gray-200 placeholder:text-gray-600" />
+                                    <div className="space-y-2 pl-4 border-l-2 border-white/10 ml-2">
+                                        {block.content.options.map((opt: string, optIdx: number) => (
+                                            <div key={optIdx} className="flex items-center gap-3">
+                                                <input type="radio" name={`correct-${block.id}`}
+                                                    checked={block.content.correctIndex === optIdx}
+                                                    onChange={() => updateBlock(block.id, { ...block.content, correctIndex: optIdx })}
+                                                    className="w-4 h-4 text-blue-500" />
+                                                <Input placeholder={`Option ${optIdx + 1}`} value={opt}
+                                                    onChange={e => {
+                                                        const opts = [...block.content.options]
+                                                        opts[optIdx] = e.target.value
+                                                        updateBlock(block.id, { ...block.content, options: opts })
+                                                    }}
+                                                    className="bg-[#0f0f1a] border-white/10 text-gray-200 placeholder:text-gray-600" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            {block.type === 'section' && (
+                                <div className="space-y-3 p-4 bg-indigo-900/10 border border-indigo-500/20 rounded-xl">
+                                    <div className="flex items-center gap-2 mb-2 text-indigo-400 font-semibold text-sm uppercase tracking-wider">
+                                        <FolderOpen className="w-4 h-4" />
+                                        Collapsible Section Header
+                                    </div>
+                                    <Input 
+                                        value={block.content.title}
+                                        onChange={e => updateBlock(block.id, { ...block.content, title: e.target.value })}
+                                        className="bg-[#0f0f1a] border-white/10 text-xl font-bold text-gray-200 placeholder:text-gray-600 h-14"
+                                        placeholder="Type section title here..."
+                                    />
+                                    <p className="text-xs text-gray-500">All blocks placed below this section will be grouped inside it.</p>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     )
 }

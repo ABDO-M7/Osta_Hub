@@ -26,6 +26,7 @@ export function BlockRenderer({ block }: { block: any }) {
 
     useEffect(() => {
         if (type === 'paragraph' && textRef.current) {
+            // 1. Math Formula Hydration
             import('katex').then((katex) => {
                 const formulas = textRef.current!.querySelectorAll('.ql-formula')
                 formulas.forEach(el => {
@@ -35,6 +36,55 @@ export function BlockRenderer({ block }: { block: any }) {
                     }
                 })
             })
+
+            // 2. Collapsible Headers Logic
+            const headers = textRef.current.querySelectorAll('h1, h2');
+            headers.forEach((header: Element) => {
+                const el = header as HTMLElement;
+                if (el.hasAttribute('data-collapsible')) return;
+                el.setAttribute('data-collapsible', 'true');
+                
+                // Style header
+                el.classList.add('cursor-pointer', 'flex', 'items-center', 'gap-2', 'group', 'hover:bg-[#1a1a2e]', 'p-2', 'rounded-lg', 'transition-colors', '-ml-2', 'select-none');
+                
+                // Add caret
+                const caret = document.createElement('span');
+                caret.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-200 text-gray-500 group-hover:text-violet-500"><path d="m6 9 6 6 6-6"/></svg>`;
+                caret.className = 'header-caret flex-shrink-0 mt-1';
+                el.prepend(caret);
+                
+                // Click to collapse siblings
+                el.addEventListener('click', () => {
+                    const isCollapsed = el.hasAttribute('data-collapsed');
+                    if (isCollapsed) {
+                        el.removeAttribute('data-collapsed');
+                        caret.querySelector('svg')?.classList.remove('-rotate-90');
+                    } else {
+                        el.setAttribute('data-collapsed', 'true');
+                        caret.querySelector('svg')?.classList.add('-rotate-90');
+                    }
+                    
+                    const level = parseInt(el.tagName[1]);
+                    let node = el.nextElementSibling as HTMLElement | null;
+                    
+                    while (node) {
+                        if (node.tagName.match(/^H[1-6]$/)) {
+                            const nextLevel = parseInt(node.tagName[1]);
+                            if (nextLevel <= level) break; // Break on same or higher importance header
+                        }
+                        
+                        // We use a CSS class or inline style.
+                        if (isCollapsed) {
+                            node.style.display = '';
+                            node.style.opacity = '1';
+                        } else {
+                            node.style.display = 'none';
+                            node.style.opacity = '0';
+                        }
+                        node = node.nextElementSibling as HTMLElement | null;
+                    }
+                });
+            });
         }
     }, [content?.text, type])
 
