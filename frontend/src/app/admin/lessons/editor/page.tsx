@@ -346,15 +346,36 @@ function EditorContent() {
 
                                             {block.type === 'image' && (
                                                 <div className="space-y-3">
-                                                    <Input placeholder="Image URL" value={block.content.url}
-                                                        onChange={e => updateBlock(block.id, { ...block.content, url: e.target.value })}
-                                                        className="bg-[#0f0f1a] border-white/10 text-gray-200 placeholder:text-gray-600" />
+                                                    <div className="flex gap-2">
+                                                        <Input placeholder="Image URL (or upload)" value={block.content.url}
+                                                            onChange={e => updateBlock(block.id, { ...block.content, url: e.target.value })}
+                                                            className="bg-[#0f0f1a] border-white/10 text-gray-200 placeholder:text-gray-600" />
+                                                        
+                                                        <div className="relative shrink-0">
+                                                            <input 
+                                                                type="file" 
+                                                                accept="image/*" 
+                                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                                                onChange={(e) => {
+                                                                    const file = e.target.files?.[0];
+                                                                    if (file) {
+                                                                        const reader = new FileReader();
+                                                                        reader.onload = () => updateBlock(block.id, { ...block.content, url: reader.result });
+                                                                        reader.readAsDataURL(file);
+                                                                    }
+                                                                }}
+                                                            />
+                                                            <Button type="button" variant="secondary" className="bg-[#1a1a2e] hover:bg-[#2a2a4e] text-indigo-300 border border-indigo-500/30">
+                                                                Upload Image
+                                                            </Button>
+                                                        </div>
+                                                    </div>
                                                     <Input placeholder="Alt text (optional)" value={block.content.alt}
                                                         onChange={e => updateBlock(block.id, { ...block.content, alt: e.target.value })}
                                                         className="bg-[#0f0f1a] border-white/10 text-gray-200 placeholder:text-gray-600" />
                                                     {block.content.url && (
                                                         <div className="rounded-lg border border-white/10 bg-black/20 flex justify-center p-2">
-                                                            <img src={block.content.url} alt="Preview" className="max-h-40 object-contain"
+                                                            <img src={block.content.url} alt="Preview" className="max-h-[300px] object-contain"
                                                                 onError={(e: any) => { e.target.style.display = 'none' }} />
                                                         </div>
                                                     )}
