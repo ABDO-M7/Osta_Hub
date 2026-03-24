@@ -39,9 +39,15 @@ model User {
   emailVerifyToken  String?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
+  // Learning Progress & Streaks
+  currentStreak     Int       @default(0)
+  longestStreak     Int       @default(0)
+  lastActivityDate  DateTime?
   attempts          Attempt[]
   enrollments       Enrollment[]
   feedbacks         Feedback[]
+  lessonProgresses  LessonProgress[]
+  notes             Note[]
 
   @@map("users")
 }
@@ -69,6 +75,8 @@ model Lesson {
   updatedAt DateTime      @updatedAt
   subject   Subject       @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   blocks    LessonBlock[]
+  progresses LessonProgress[]
+  notes     Note[]
 
   @@map("lessons")
 }
@@ -175,4 +183,31 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@map("notifications")
+}
+
+model LessonProgress {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  lessonId  Int
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@map("lesson_progress")
+}
+
+model Note {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  lessonId  Int
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@map("notes")
 }

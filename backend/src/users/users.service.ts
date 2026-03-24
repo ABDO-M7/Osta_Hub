@@ -123,11 +123,27 @@ export class UsersService {
             ? completedAttempts.reduce((sum, a) => sum + (a.score || 0), 0) / completedAttempts.length
             : 0;
 
+        const bestScore = completedAttempts.length > 0 
+            ? Math.max(...completedAttempts.map(a => a.score || 0)) 
+            : 0;
+
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { currentStreak: true }
+        });
+
+        const completedLessons = await this.prisma.lessonProgress.count({
+            where: { userId, completed: true }
+        });
+
         return {
             totalAttempts,
             completedAttempts: completedAttempts.length,
             averageScore: Math.round(averageScore * 100) / 100,
+            bestScore: Math.round(bestScore * 100) / 100,
             recentAttempts: attempts.slice(0, 5),
+            completedLessons,
+            streakDays: user?.currentStreak || 0
         };
     }
 }

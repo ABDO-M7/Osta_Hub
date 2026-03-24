@@ -1,13 +1,15 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { api } from "@/lib/api"
 import { BlockRenderer } from "@/components/lessons/BlockRenderer"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, ArrowRight, CheckCircle2 } from "lucide-react"
+import { ArrowLeft, ArrowRight, CheckCircle2, BookOpen, Edit3, Loader2, Save } from "lucide-react"
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@/components/ui/accordion"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetDescription } from "@/components/ui/sheet"
+import { Textarea } from "@/components/ui/textarea"
 
 export default function LessonPage() {
     const params = useParams()
@@ -17,31 +19,72 @@ export default function LessonPage() {
     const [loading, setLoading] = useState(true)
     const [showAdvanced, setShowAdvanced] = useState(true)
 
+    // Progress and Notes State
+    const [isCompleted, setIsCompleted] = useState(false)
+    const [completing, setCompleting] = useState(false)
+    const [noteContent, setNoteContent] = useState("")
+    const [savingNote, setSavingNote] = useState(false)
+    const [notesOpen, setNotesOpen] = useState(false)
+    const [saveSuccess, setSaveSuccess] = useState(false)
+
     useEffect(() => {
         if (!id) return
-        const fetchLesson = async () => {
+        const fetchLessonData = async () => {
             try {
-                const res = await api.get(`/lessons/${id}`)
+                // Fetch lesson and existing notes concurrently
+                const [res, noteRes] = await Promise.all([
+                    api.get(`/lessons/${id}`),
+                    api.get(`/lessons/${id}/notes`).catch(() => ({ data: { content: "" } })) // Ignore 404 if notes not found
+                ])
                 setLesson(res.data)
+                setNoteContent(noteRes.data?.content || "")
             } catch (err) {
-                console.error(err)
+                console.error("Failed to fetch lesson data", err)
             } finally {
                 setLoading(false)
             }
         }
-        fetchLesson()
+        fetchLessonData()
     }, [id])
 
-    if (loading) return <div className="p-8 text-center text-gray-500 flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        Loading lesson material...
-    </div>
+    const handleMarkComplete = async () => {
+        setCompleting(true)
+        try {
+            await api.post(`/lessons/${id}/complete`)
+            setIsCompleted(true)
+        } catch (err) {
+            console.error("Failed to mark complete", err)
+        } finally {
+            setCompleting(false)
+        }
+    }
+
+    const handleSaveNote = async () => {
+        setSavingNote(true)
+        setSaveSuccess(false)
+        try {
+            await api.post(`/lessons/${id}/notes`, { content: noteContent })
+            setSaveSuccess(true)
+            setTimeout(() => setSaveSuccess(false), 3000)
+        } catch (err) {
+            console.error("Failed to save note", err)
+        } finally {
+            setSavingNote(false)
+        }
+    }
+
+    if (loading) return (
+        <div className="p-8 text-center text-gray-500 flex flex-col items-center justify-center min-h-[60vh]">
+            <div className="w-8 h-8 border-4 border-violet-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+            Loading lesson material...
+        </div>
+    )
 
     if (!lesson) return <div className="p-8 text-center text-red-500">Lesson not found</div>
 
     return (
-        <div className="max-w-3xl mx-auto pb-24">
-            <Link href={`/student/subjects/${lesson.subjectId}`} className="inline-flex items-center text-sm font-medium text-green-400 hover:text-green-300 mb-6 transition-colors">
+        <div className="max-w-3xl mx-auto pb-32 relative min-h-screen">
+            <Link href={`/student/subjects/${lesson.subjectId}`} className="inline-flex items-center text-sm font-medium text-violet-400 hover:text-violet-300 mb-6 transition-colors">
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back to {lesson.subject?.name || 'Subject'}
             </Link>
@@ -72,8 +115,9 @@ export default function LessonPage() {
 
                     if (blocksToRender.length === 0) {
                         return (
-                            <div className="p-8 border-2 border-dashed border-white/10 rounded-xl text-center text-gray-500">
-                                This lesson has no content blocks yet (or all advanced content is hidden).
+                            <div className="p-12 border-2 border-dashed border-white/10 rounded-xl text-center text-gray-500">
+                                <BookOpen className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                                <p>This lesson has no content blocks yet (or all advanced content is hidden).</p>
                             </div>
                         )
                     }
@@ -128,17 +172,72 @@ export default function LessonPage() {
                 })()}
             </div>
 
-            <div className="mt-16 pt-8 border-t flex items-center justify-between">
-                <Button variant="outline" onClick={() => router.push(`/student/subjects/${lesson.subjectId}`)}>
-                    Mark as Complete
-                    <CheckCircle2 className="h-4 w-4 ml-2 text-green-500" />
+            {/* Bottom Actions */}
+            <div className="mt-16 pt-8 border-t border-white/10 flex items-center justify-between">
+                <Button 
+                    variant={isCompleted ? "default" : "outline"}
+                    className={isCompleted ? "bg-green-600 hover:bg-green-700 text-white border-none" : "border-violet-500/30 text-violet-300 hover:bg-violet-500/10"}
+                    onClick={handleMarkComplete}
+                    disabled={isCompleted || completing}
+                >
+                    {completing && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    {isCompleted ? "Completed" : "Mark as Complete"}
+                    <CheckCircle2 className={`h-4 w-4 ml-2 ${isCompleted ? 'text-white' : 'text-violet-400'}`} />
                 </Button>
+                
                 <Link href={`/student/subjects/${lesson.subjectId}`}>
-                    <Button>
-                        Next Lesson <ArrowRight className="h-4 w-4 ml-2" />
+                    <Button className="bg-white text-black hover:bg-gray-200">
+                        Back to Courses <ArrowRight className="h-4 w-4 ml-2" />
                     </Button>
                 </Link>
             </div>
+
+            {/* Floating Action Button for Notes */}
+            <Sheet open={notesOpen} onOpenChange={setNotesOpen}>
+                <SheetTrigger asChild>
+                    <button className="fixed bottom-8 right-8 z-50 p-4 bg-violet-600 hover:bg-violet-500 text-white rounded-full shadow-[0_8px_30px_rgba(132,0,255,0.4)] transition-transform hover:scale-105 active:scale-95 group">
+                        <Edit3 className="w-6 h-6" />
+                        <span className="sr-only">Open Notes</span>
+                    </button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[400px] sm:w-[500px] border-l border-white/10 bg-[#0a0a0f]/95 backdrop-blur-xl p-0 flex flex-col">
+                    <SheetHeader className="p-6 border-b border-white/10">
+                        <SheetTitle className="text-2xl font-bold text-white flex items-center">
+                            <Edit3 className="w-5 h-5 mr-3 text-violet-400" />
+                            My Notes
+                        </SheetTitle>
+                        <SheetDescription className="text-gray-400">
+                            Capture your thoughts and key takeaways for this lesson. Saved automatically to your profile.
+                        </SheetDescription>
+                    </SheetHeader>
+                    
+                    <div className="flex-1 p-6 flex flex-col relative">
+                        <Textarea 
+                            placeholder="Type your notes here... Markdown is supported by you in the future! :)"
+                            className="flex-1 resize-none bg-black/40 border-white/10 text-white p-4 text-base leading-relaxed focus-visible:ring-violet-500 rounded-xl"
+                            value={noteContent}
+                            onChange={(e) => setNoteContent(e.target.value)}
+                        />
+                        
+                        <div className="mt-6 flex items-center justify-between">
+                            <span className={`text-sm tracking-wide ${saveSuccess ? 'text-green-400' : 'text-transparent'} transition-colors`}>
+                                Note saved successfully!
+                            </span>
+                            <Button 
+                                onClick={handleSaveNote} 
+                                disabled={savingNote}
+                                className="bg-violet-600 hover:bg-violet-500 text-white rounded-xl px-6"
+                            >
+                                {savingNote ? (
+                                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...</>
+                                ) : (
+                                    <><Save className="w-4 h-4 mr-2" /> Save Notes</>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </SheetContent>
+            </Sheet>
         </div >
     )
 }

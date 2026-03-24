@@ -71,4 +71,71 @@ export class LessonsService {
         await this.findOne(id);
         return this.prisma.lesson.delete({ where: { id } });
     }
+
+    async markComplete(lessonId: number, userId: number) {
+        const lesson = await this.findOne(lessonId);
+        
+        // Upsert LessonProgress
+        const progress = await this.prisma.lessonProgress.upsert({
+            where: { userId_lessonId: { userId, lessonId } },
+            update: { completed: true },
+            create: { userId, lessonId, completed: true }
+        });
+
+        // Handle streak logic
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (user) {
+            const now = new Date();
+            const lastActivity = user.lastActivityDate;
+            let currentStreak = user.currentStreak;
+            let longestStreak = user.longestStreak;
+
+            if (!lastActivity) {
+                currentStreak = 1;
+            } else {
+                // Calculate simple diff in days using locale midnight
+                const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const lastMidnight = new Date(lastActivity.getFullYear(), lastActivity.getMonth(), lastActivity.getDate());
+                const diffTime = Math.abs(nowMidnight.getTime() - lastMidnight.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+                
+                if (diffDays === 1) {
+                    currentStreak += 1;
+                } else if (diffDays > 1) {
+                    currentStreak = 1;
+                }
+            }
+            if (currentStreak > longestStreak) longestStreak = currentStreak;
+
+            await this.prisma.user.update({
+                where: { id: userId },
+                data: { currentStreak, longestStreak, lastActivityDate: now }
+            });
+        }
+
+        return progress;
+    }
+
+    async getNote(lessonId: number, userId: number) {
+        const note = await this.prisma.note.findFirst({
+            where: { lessonId, userId }
+        });
+        return note || { content: '' };
+    }
+
+    async saveNote(lessonId: number, userId: number, content: string) {
+        const existing = await this.prisma.note.findFirst({
+            where: { lessonId, userId }
+        });
+        if (existing) {
+            return this.prisma.note.update({
+                where: { id: existing.id },
+                data: { content }
+            });
+        } else {
+            return this.prisma.note.create({
+                data: { userId, lessonId, content }
+            });
+        }
+    }
 }

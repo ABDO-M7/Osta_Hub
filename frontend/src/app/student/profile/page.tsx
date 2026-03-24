@@ -103,11 +103,19 @@ export default function StudentProfile() {
     // Build 6 learning analytics cards from real stats
     const avg = stats?.averageScore ?? 0
     const total = stats?.totalAttempts ?? 0
-    const completed = stats?.completedAttempts ?? 0
+    const lessons = stats?.completedLessons ?? 0
     const best = stats?.bestScore ?? (stats?.averageScore ?? 0)
-    // Derived / estimated metrics
-    const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0
-    const streakDays = stats?.streakDays ?? Math.min(total * 2, 30) // use server value or estimate
+    const streakDays = stats?.streakDays ?? 0
+
+    // Random Quote logic (predictable during session)
+    const QUOTES = [
+        '"Talk is cheap. Show me the code." — Linus',
+        '"First solve the problem, then write the code." — John',
+        '"The best way to predict the future is to invent it." — Alan',
+        '"Make it work, make it right, make it fast." — Kent',
+        '"Simplicity is the soul of efficiency." — Austin'
+    ];
+    const quote = QUOTES[(user?.id || 0) % QUOTES.length];
 
     const bentoCards = [
         {
@@ -124,9 +132,9 @@ export default function StudentProfile() {
         },
         {
             color: '#060010',
-            label: '✅ Completed',
-            title: `${completed}`,
-            description: `${completionRate}% completion rate across all attempts`,
+            label: '📚 Lessons Taken',
+            title: `${lessons}`,
+            description: lessons === 0 ? "Start your first lesson!" : `${lessons} lessons completed so far.`,
         },
         {
             color: '#060010',
@@ -136,9 +144,9 @@ export default function StudentProfile() {
         },
         {
             color: '#060010',
-            label: '📚 Level',
-            title: form.level || "—",
-            description: form.specialization ? `Spec: ${form.specialization}` : "No specialization set yet",
+            label: '💡 Tech Quote',
+            title: quote.split('»')[0],
+            description: "Daily inspiration.",
         },
         {
             color: '#060010',
@@ -149,90 +157,98 @@ export default function StudentProfile() {
     ]
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="space-y-12 animate-in fade-in duration-500 pb-20">
+            {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold tracking-tight text-white mb-2">My Profile</h1>
-                <p className="text-gray-400">Manage your account details and view your progress.</p>
+                <h1 className="text-4xl font-extrabold tracking-tight text-white mb-2">My Profile</h1>
+                <p className="text-gray-400 max-w-lg">Manage your personal details and view real-time progression analytics powered by NeuroTron AI.</p>
             </div>
 
-            {/* Profile Info Section */}
-            <Card className="border-[#1e1e2e] bg-[#12121a]/80 backdrop-blur-xl shrink-0 overflow-hidden relative">
-                <div className="absolute top-0 w-full h-24 bg-gradient-to-r from-violet-600/40 to-fuchsia-600/40" />
-                <CardContent className="pt-12 relative z-10 px-8 pb-8">
-                    <div className="flex flex-col md:flex-row gap-8 items-start">
-                        {/* Avatar */}
-                        <div className="relative group shrink-0">
-                            <div className="w-32 h-32 rounded-full border-4 border-[#12121a] bg-[#1e1e2e] overflow-hidden flex items-center justify-center relative shadow-xl">
-                                {form.avatar ? (
-                                    <img src={form.avatar} alt="Avatar" className="w-full h-full object-cover" />
-                                ) : (
-                                    <User className="w-12 h-12 text-gray-500" />
-                                )}
-                                
-                                {isEditing && (
-                                    <div 
-                                        className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
-                                        onClick={() => fileInputRef.current?.click()}
-                                    >
-                                        <Camera className="w-6 h-6 text-white" />
-                                    </div>
-                                )}
+            {/* Premium Glass Personal Details */}
+            <div className="relative group">
+                {/* Glow Backdrop */}
+                <div className="absolute -inset-1 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-[32px] blur-lg opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+                
+                <Card className="relative border border-white/10 bg-[#0a0a0f]/80 backdrop-blur-2xl rounded-[32px] overflow-hidden shadow-2xl">
+                    <div className="absolute top-0 w-full h-32 bg-gradient-to-b from-violet-600/20 to-transparent pointer-events-none" />
+                    
+                    <CardContent className="p-8 sm:p-12 relative z-10 flex flex-col md:flex-row gap-10">
+                        {/* Interactive Avatar */}
+                        <div className="flex flex-col items-center gap-4 shrink-0">
+                            <div className="relative group/avatar">
+                                <div className="w-36 h-36 rounded-full border-2 border-white/20 bg-[#1e1e2e] overflow-hidden flex items-center justify-center relative shadow-[0_0_40px_rgba(132,0,255,0.3)] transition-transform duration-500 group-hover/avatar:scale-105">
+                                    {form.avatar ? (
+                                        <img src={form.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <User className="w-16 h-16 text-gray-500" />
+                                    )}
+                                    
+                                    {isEditing && (
+                                        <div 
+                                            className="absolute inset-0 bg-black/60 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer backdrop-blur-sm"
+                                            onClick={() => fileInputRef.current?.click()}
+                                        >
+                                            <Camera className="w-8 h-8 text-white mb-2" />
+                                            <span className="text-xs font-semibold text-white tracking-widest uppercase">Upload</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <input 
+                                    type="file" 
+                                    accept="image/*" 
+                                    className="hidden" 
+                                    ref={fileInputRef} 
+                                    onChange={handleAvatarChange} 
+                                />
                             </div>
-                            <input 
-                                type="file" 
-                                accept="image/*" 
-                                className="hidden" 
-                                ref={fileInputRef} 
-                                onChange={handleAvatarChange} 
-                            />
+                            
+                            {!isEditing && (
+                                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="rounded-full bg-white/5 border-white/10 hover:bg-white/10 text-white transition-all">
+                                    <Pencil className="w-3.5 h-3.5 mr-2" />
+                                    Edit Profile
+                                </Button>
+                            )}
                         </div>
 
-                        {/* Details */}
-                        <div className="flex-1 w-full space-y-4">
-                            <div className="flex justify-between items-center">
-                                <h2 className="text-2xl font-bold text-white">{isEditing ? "Edit Profile" : "Personal Details"}</h2>
-                                {!isEditing && (
-                                    <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="border-violet-500/30 hover:bg-violet-500/10 text-violet-300">
-                                        <Pencil className="w-4 h-4 mr-2" />
-                                        Edit
-                                    </Button>
-                                )}
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                                <div className="space-y-2">
-                                    <Label className="text-gray-400">Full Name</Label>
+                        {/* Modern Form Grid */}
+                        <div className="flex-1 w-full flex flex-col justify-center">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                                {/* Name */}
+                                <div className="space-y-2 group/input">
+                                    <Label className="text-xs font-semibold uppercase tracking-widest text-violet-400">Full Name</Label>
                                     {isEditing ? (
                                         <Input 
                                             value={form.name} 
                                             onChange={(e) => setForm({...form, name: e.target.value})} 
-                                            className="bg-[#1a1a2e] border-[#2a2a3a]" 
+                                            className="bg-black/40 border-white/10 text-white h-12 rounded-xl focus-visible:ring-violet-500" 
                                         />
                                     ) : (
-                                        <div className="text-lg font-medium text-white">{form.name || "N/A"}</div>
+                                        <div className="text-xl font-medium text-white group-hover/input:text-violet-200 transition-colors">{form.name || "—"}</div>
                                     )}
                                 </div>
                                 
-                                <div className="space-y-2">
-                                    <Label className="text-gray-400">Academic Level</Label>
+                                {/* Level */}
+                                <div className="space-y-2 group/input">
+                                    <Label className="text-xs font-semibold uppercase tracking-widest text-violet-400">Academic Level</Label>
                                     {isEditing ? (
                                         <select
                                             value={form.level}
                                             onChange={e => setForm({ ...form, level: e.target.value })}
-                                            className="w-full px-3 py-2 rounded-lg border border-[#2a2a3a] bg-[#1a1a2e] text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                                            className="w-full px-4 h-12 rounded-xl border border-white/10 bg-black/40 text-white focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
                                         >
-                                            <option value="">Select year...</option>
-                                            {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                                            <option value="" className="bg-gray-900">Select year...</option>
+                                            {LEVELS.map(l => <option key={l} value={l} className="bg-gray-900">{l}</option>)}
                                         </select>
                                     ) : (
-                                        <div className="text-lg font-medium text-white">{form.level || "N/A"}</div>
+                                        <div className="text-xl font-medium text-white group-hover/input:text-violet-200 transition-colors">{form.level || "—"}</div>
                                     )}
                                 </div>
 
-                                <div className="space-y-2">
-                                    <Label className="text-gray-400">Specialization</Label>
+                                {/* Specialization */}
+                                <div className="space-y-2 md:col-span-2 group/input">
+                                    <Label className="text-xs font-semibold uppercase tracking-widest text-violet-400">Specialization / Track</Label>
                                     {isEditing ? (
-                                        <>
+                                        <div className="flex flex-col sm:flex-row gap-4">
                                             <select
                                                 value={isOtherSpec ? "Other" : form.specialization}
                                                 onChange={e => {
@@ -245,56 +261,62 @@ export default function StudentProfile() {
                                                         setForm({ ...form, specialization: val });
                                                     }
                                                 }}
-                                                className="w-full px-3 py-2 rounded-lg border border-[#2a2a3a] bg-[#1a1a2e] text-white focus:outline-none focus:ring-2 focus:ring-violet-500/50"
+                                                className="flex-1 px-4 h-12 rounded-xl border border-white/10 bg-black/40 text-white focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all"
                                             >
-                                                <option value="" disabled>Select specialization...</option>
-                                                {PREDEFINED_SPECS.map(s => <option key={s} value={s}>{s}</option>)}
-                                                <option value="Other">Other (Please specify)</option>
+                                                <option value="" disabled className="bg-gray-900">Select specialization...</option>
+                                                {PREDEFINED_SPECS.map(s => <option key={s} value={s} className="bg-gray-900">{s}</option>)}
+                                                <option value="Other" className="bg-gray-900">Other (Enter custom)</option>
                                             </select>
                                             
                                             {isOtherSpec && (
                                                 <Input 
-                                                    placeholder="Type your specialization"
+                                                    placeholder="E.g. Quantum Computing"
                                                     value={form.specialization} 
                                                     onChange={(e) => setForm({...form, specialization: e.target.value})} 
-                                                    className="bg-[#1a1a2e] border-[#2a2a3a] mt-2" 
+                                                    className="flex-1 bg-black/40 border-white/10 text-white h-12 rounded-xl focus-visible:ring-violet-500" 
                                                 />
                                             )}
-                                        </>
+                                        </div>
                                     ) : (
-                                        <div className="text-lg font-medium text-white">{form.specialization || "N/A"}</div>
+                                        <div className="text-xl font-medium text-white group-hover/input:text-violet-200 transition-colors">{form.specialization || "—"}</div>
                                     )}
                                 </div>
                             </div>
                             
+                            {/* Save Actions */}
                             {isEditing && (
-                                <div className="flex gap-3 justify-end pt-4">
-                                    <Button variant="ghost" onClick={() => setIsEditing(false)}>Cancel</Button>
-                                    <Button onClick={handleSave} disabled={isSaving} className="bg-violet-600 hover:bg-violet-500 text-white">
+                                <div className="flex gap-4 justify-end mt-8 border-t border-white/10 pt-6">
+                                    <Button variant="ghost" onClick={() => setIsEditing(false)} className="rounded-xl text-gray-400 hover:text-white">Cancel</Button>
+                                    <Button onClick={handleSave} disabled={isSaving} className="bg-white text-black hover:bg-gray-200 rounded-xl px-8 shadow-[0_0_20px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.5)] transition-all">
                                         {isSaving ? "Saving..." : "Save Changes"}
                                     </Button>
                                 </div>
                             )}
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
+                    </CardContent>
+                </Card>
+            </div>
 
-            {/* Learning Progress — MagicBento Grid */}
-            <div>
-                <h2 className="text-2xl font-bold tracking-tight text-white mb-2">Learning Progress</h2>
-                <p className="text-gray-500 text-sm mb-6">Your personalized learning analytics at a glance.</p>
-                <MagicBento
-                    cardData={bentoCards}
-                    enableStars
-                    enableSpotlight
-                    enableBorderGlow
-                    clickEffect
-                    enableMagnetism
-                    glowColor="132, 0, 255"
-                    spotlightRadius={300}
-                    particleCount={10}
-                />
+            {/* Centered Learning Progress */}
+            <div className="pt-8 flex flex-col items-center">
+                <div className="text-center mb-10">
+                    <h2 className="text-3xl font-extrabold tracking-tight text-white mb-3">Learning Progress</h2>
+                    <p className="text-gray-400 text-sm max-w-md mx-auto">Your academic analytics displayed through our interactive MagicBento dashboard.</p>
+                </div>
+                
+                <div className="w-full flex justify-center">
+                    <MagicBento
+                        cardData={bentoCards}
+                        enableStars={true}
+                        enableSpotlight={true}
+                        enableBorderGlow={true}
+                        clickEffect={true}
+                        enableMagnetism={true}
+                        glowColor="132, 0, 255"
+                        spotlightRadius={400}
+                        particleCount={15}
+                    />
+                </div>
             </div>
         </div>
     )

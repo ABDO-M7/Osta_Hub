@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseIntPipe, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, ParseIntPipe, UseGuards, Request } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -39,5 +39,23 @@ export class LessonsController {
     @Roles('ADMIN')
     remove(@Param('id', ParseIntPipe) id: number) {
         return this.lessonsService.remove(id);
+    }
+
+    @Post(':id/complete')
+    @UseGuards(AuthGuard('jwt'))
+    markComplete(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
+        return this.lessonsService.markComplete(id, req.user.id);
+    }
+
+    @Get(':id/notes')
+    @UseGuards(AuthGuard('jwt'))
+    getNote(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
+        return this.lessonsService.getNote(id, req.user.id);
+    }
+
+    @Post(':id/notes')
+    @UseGuards(AuthGuard('jwt'))
+    saveNote(@Param('id', ParseIntPipe) id: number, @Body('content') content: string, @Request() req: any) {
+        return this.lessonsService.saveNote(id, req.user.id, content);
     }
 }
