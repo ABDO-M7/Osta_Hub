@@ -58,7 +58,6 @@ export default function HomePage() {
                     height: '700px',
                     maxWidth: '95vw',
                     maxHeight: '95vw',
-                    pointerEvents: 'none',
                     zIndex: 0,
                 }}>
                     <Orb
@@ -169,7 +168,7 @@ export default function HomePage() {
 
             {/* ─── Footer ───────────────────────────────────────────────── */}
             <footer className="relative z-20 text-center py-6 text-xs" style={{ color: "rgba(247,235,249,0.3)" }}>
-                © 2025 <Logo />. All rights reserved.
+                © 2026 <Logo />. All rights reserved.
             </footer>
         </main>
     )
