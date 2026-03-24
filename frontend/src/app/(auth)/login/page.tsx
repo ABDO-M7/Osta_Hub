@@ -74,7 +74,7 @@ export default function LoginPage() {
     }, [isAuthenticated, user])
 
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0a0f] p-4">
+        <div className="min-h-screen flex flex-col items-center justify-center p-4 relative">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-violet-500/8 blur-[120px] rounded-full pointer-events-none" />
 
             <div className="flex items-center gap-2 mb-8 relative">

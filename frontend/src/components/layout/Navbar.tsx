@@ -140,52 +140,74 @@ export function Navbar() {
                             </div>
                         </motion.div>
                     ) : (
-                        // AFTER SCROLL: full-width sticky bar
+                        // AFTER SCROLL: premium frosted sticky bar
                         <motion.div
                             key="sticky"
-                            initial={{ opacity: 0, y: -20 }}
+                            initial={{ opacity: 0, y: -24 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.3, ease: "easeOut" }}
-                            className="w-full border-b border-white/10 bg-[#070712]/80 backdrop-blur-2xl shadow-[0_2px_40px_rgba(0,0,0,0.6)]"
+                            exit={{ opacity: 0, y: -24 }}
+                            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                            className="w-full"
                         >
-                            <div className="max-w-7xl mx-auto px-6 h-16 flex items-center gap-4">
-                                {/* Logo */}
-                                <Link href={homeHref} className="flex items-center gap-2.5 group mr-4">
-                                    <div className="transition-transform duration-300 group-hover:scale-110 flex items-center justify-center p-1.5 rounded-xl">
-                                        <Image src="/logo.svg" alt="NeuroTron Logo" width={20} height={20} priority unoptimized />
+                            {/* Thin violet top accent line */}
+                            <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-violet-500/80 to-transparent" />
+
+                            <div className="bg-[#04040a]/80 backdrop-blur-3xl shadow-[0_8px_60px_rgba(0,0,0,0.8)] border-b border-white/[0.06]">
+                                <div className="max-w-7xl mx-auto px-6 h-[60px] flex items-center gap-6">
+
+                                    {/* Logo - left */}
+                                    <Link href={homeHref} className="flex items-center gap-2.5 group shrink-0">
+                                        <div className="relative">
+                                            <div className="absolute inset-0 rounded-lg bg-violet-500/30 blur-md group-hover:blur-lg transition-all duration-300" />
+                                            <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600/80 to-indigo-600/80 flex items-center justify-center border border-violet-500/30 shadow-inner">
+                                                <Image src="/logo.svg" alt="NeuroTron" width={16} height={16} priority unoptimized />
+                                            </div>
+                                        </div>
+                                        <Logo className="text-base tracking-tight text-white hidden sm:block font-semibold" />
+                                    </Link>
+
+                                    {/* Divider */}
+                                    <div className="h-5 w-px bg-white/10 shrink-0" />
+
+                                    {/* Links - center */}
+                                    <div
+                                        className="hidden md:flex items-center gap-1 flex-1 justify-center"
+                                        onMouseLeave={() => setHoveredPath(null)}
+                                    >
+                                        {resolvedLinks.map(link => {
+                                            const active = isActive(link.href)
+                                            const isHovered = hoveredPath === link.href
+                                            return (
+                                                <Link
+                                                    key={link.href}
+                                                    href={link.href}
+                                                    onMouseEnter={() => setHoveredPath(link.href)}
+                                                    className={`relative px-4 py-1.5 text-sm font-medium rounded-full transition-all duration-200 z-10 ${
+                                                        active ? "text-white" : isHovered ? "text-white" : "text-gray-400 hover:text-gray-200"
+                                                    }`}
+                                                >
+                                                    {(isHovered || active) && (
+                                                        <motion.div
+                                                            layoutId="navbar-hover-bg-sticky"
+                                                            className={`absolute inset-0 rounded-full ${
+                                                                active
+                                                                    ? "bg-violet-600/20 border border-violet-500/30 shadow-[0_0_12px_rgba(139,92,246,0.2)]" 
+                                                                    : "bg-white/6 border border-white/10"
+                                                            }`}
+                                                            initial={false}
+                                                            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                                        />
+                                                    )}
+                                                    <span className="relative z-20">{link.label}</span>
+                                                </Link>
+                                            )
+                                        })}
                                     </div>
-                                    <Logo className="text-lg tracking-tight text-white hidden sm:block" />
-                                </Link>
 
-                                {/* Links */}
-                                <div
-                                    className="hidden md:flex items-center gap-0.5 flex-1 justify-center"
-                                    onMouseLeave={() => setHoveredPath(null)}
-                                >
-                                    {resolvedLinks.map(link => {
-                                        const active = isActive(link.href)
-                                        const isHovered = hoveredPath === link.href
-                                        return (
-                                            <Link
-                                                key={link.href}
-                                                href={link.href}
-                                                onMouseEnter={() => setHoveredPath(link.href)}
-                                                className={`relative px-4 py-1.5 text-sm font-medium rounded-full transition-colors duration-200 z-10 ${active || isHovered ? "text-white" : "text-gray-400"}`}
-                                            >
-                                                {isHovered && (
-                                                    <motion.div layoutId="navbar-hover-bg-sticky" className="absolute inset-0 rounded-full bg-white/10 border border-white/10" initial={false} transition={{ type: "spring", stiffness: 400, damping: 30, mass: 0.8 }} />
-                                                )}
-                                                <span className="relative z-20">{link.label}</span>
-                                                {active && <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-violet-500 shadow-[0_0_8px_rgba(139,92,246,0.8)] z-20" />}
-                                            </Link>
-                                        )
-                                    })}
-                                </div>
-
-                                {/* Right actions (with profile shown here too) */}
-                                <div className="ml-auto">
-                                    <RightActions user={user} unread={unread} showNotif={showNotif} setShowNotif={setShowNotif} notifications={notifications} handleLogout={handleLogout} homeHref={homeHref} />
+                                    {/* Right actions */}
+                                    <div className="ml-auto shrink-0">
+                                        <RightActions user={user} unread={unread} showNotif={showNotif} setShowNotif={setShowNotif} notifications={notifications} handleLogout={handleLogout} homeHref={homeHref} />
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>
