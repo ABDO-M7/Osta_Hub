@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, Suspense } from "react"
+import { useEffect, useState, Suspense, useRef } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { api } from "@/lib/api"
@@ -12,7 +12,12 @@ import dynamic from 'next/dynamic'
 import 'react-quill/dist/quill.snow.css'
 
 // ── Dynamic imports ──────────────────────────────────────────────────────────
-const ReactQuill = dynamic(() => import('react-quill'), {
+const ReactQuill = dynamic(async () => {
+    const { default: RQ } = await import('react-quill')
+    return function Comp({ forwardedRef, ...props }: any) {
+        return <RQ ref={forwardedRef} {...props} />
+    }
+}, {
     ssr: false,
     loading: () => <div className="h-36 bg-[#1a1a2e] rounded-lg border border-white/10 animate-pulse" />
 })
@@ -106,6 +111,69 @@ function BlockPreview({ block }: { block: any }) {
     return <p className="text-gray-500 italic text-sm">{type} — preview shown for students only.</p>
 }
 
+function RichTextEditor({ value, onChange }: { value: string, onChange: (val: string) => void }) {
+    const quillRef = useRef<any>(null)
+    const [hexColor, setHexColor] = useState('#a855f7')
+
+    const applyColor = () => {
+        if (quillRef.current) {
+            const editor = quillRef.current.getEditor()
+            editor.format('color', hexColor)
+        }
+    }
+
+    const applyBackground = () => {
+        if (quillRef.current) {
+            const editor = quillRef.current.getEditor()
+            editor.format('background', hexColor)
+        }
+    }
+
+    const quillModules = {
+        toolbar: [
+            [{ header: [1, 2, 3, false] }],
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ color: [] }, { background: [] }],
+            ['link', 'clean']
+        ]
+    }
+
+    return (
+        <div className="space-y-3">
+            <ReactQuill
+                forwardedRef={quillRef}
+                theme="snow"
+                value={value}
+                onChange={onChange}
+                modules={quillModules}
+                className="quill-dark"
+            />
+            <div className="flex items-center gap-2 p-2 bg-[#1a1a2e] rounded-md border border-white/10 mt-2">
+                <span className="text-xs text-gray-400 font-medium">Custom Color:</span>
+                <input 
+                    type="color" 
+                    value={hexColor} 
+                    onChange={e => setHexColor(e.target.value)}
+                    className="w-8 h-8 rounded cursor-pointer bg-transparent border-none p-0"
+                />
+                <Input 
+                    value={hexColor} 
+                    onChange={e => setHexColor(e.target.value)} 
+                    placeholder="#HEX" 
+                    className="w-24 h-8 text-xs bg-[#0f0f1a] border border-white/10 text-gray-200"
+                />
+                <Button size="sm" variant="secondary" className="h-8 text-xs bg-white/5 hover:bg-white/10 text-white border border-white/10" onClick={applyColor}>
+                    Apply to Text
+                </Button>
+                <Button size="sm" variant="secondary" className="h-8 text-xs bg-white/5 hover:bg-white/10 text-white border border-white/10" onClick={applyBackground}>
+                    Apply to Highlight
+                </Button>
+            </div>
+        </div>
+    )
+}
+
 // ── Main Editor ───────────────────────────────────────────────────────────────
 function EditorContent() {
     const searchParams = useSearchParams()
@@ -170,16 +238,6 @@ function EditorContent() {
         const nb = [...blocks];
         [nb[idx], nb[idx + dir]] = [nb[idx + dir], nb[idx]]
         setBlocks(nb)
-    }
-
-    const quillModules = {
-        toolbar: [
-            [{ header: [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            [{ color: [] }, { background: [] }],
-            ['link', 'clean']
-        ]
     }
 
     if (loading) return <div className="p-8 text-center text-gray-500">Loading editor...</div>
@@ -280,12 +338,9 @@ function EditorContent() {
                                     {!isPreviewing && (
                                         <>
                                             {block.type === 'paragraph' && (
-                                                <ReactQuill
-                                                    theme="snow"
+                                                <RichTextEditor
                                                     value={block.content.text}
                                                     onChange={val => updateBlock(block.id, { ...block.content, text: val })}
-                                                    modules={quillModules}
-                                                    className="quill-dark"
                                                 />
                                             )}
 
