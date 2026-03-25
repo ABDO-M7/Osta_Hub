@@ -144,4 +144,36 @@ export class AttemptsService {
         });
         return result._sum.points || 0;
     }
+
+    async analyzeAttempt(attemptId: number, userId: number) {
+        // Fetch the attempt with full relations exactly as needed for analysis
+        const attempt = await this.prisma.attempt.findUnique({
+            where: { id: attemptId },
+            include: {
+                answers: { include: { question: true } },
+                exam: { include: { subject: true } },
+            },
+        });
+
+        if (!attempt) throw new NotFoundException('Attempt not found');
+        if (attempt.userId !== userId) throw new BadRequestException('Not your attempt');
+        if (!attempt.submittedAt) throw new BadRequestException('Attempt not submitted yet');
+
+        // If it already has an analysis, just return it (save tokens/time)
+        if (attempt.aiAnalysis) {
+            return { aiAnalysis: attempt.aiAnalysis };
+        }
+
+        // Generate the analysis using Gemini
+        const generatedAnalysis = await this.aiGrading.analyzeAttempt(attempt);
+
+        // Save it to the database for future views
+        const updated = await this.prisma.attempt.update({
+            where: { id: attemptId },
+            data: { aiAnalysis: generatedAnalysis },
+            select: { aiAnalysis: true } // only return what we need
+        });
+
+        return updated;
+    }
 }

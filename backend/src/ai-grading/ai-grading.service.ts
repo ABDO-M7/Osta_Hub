@@ -107,4 +107,74 @@ Student's Answer: ${answer}`;
 
         return { score, feedback };
     }
+
+    async analyzeAttempt(attemptData: any): Promise<string> {
+        if (!this.ai) {
+            return "AI Analysis is currently unavailable. Please ask your administrator to configure the AI integration.";
+        }
+
+        try {
+            let prompt = `You are an expert tutor and academic coach analyzing a student's exam attempt.
+Please generate a personalized, encouraging, and highly structured report in Markdown.
+
+Exam Subject: ${attemptData.exam?.subject?.name || 'General'}
+Exam Title: ${attemptData.exam?.title || 'Assessment'}
+Student Score: ${attemptData.score}%
+
+Your report MUST NOT contain any JSON, only clean Markdown.
+It should include:
+1. **Performance Summary**: A brief, encouraging overview.
+2. **Key Strengths**: Identify what they did well.
+3. **Areas for Improvement**: Pinpoint 1-3 specific topics they struggled with based on incorrect answers or low-scoring essays.
+4. **Actionable Revision Plan**: Give them concrete advice on what precisely to study next to master those missed topics.
+
+Here is the breakdown of their answers:
+`;
+
+            if (attemptData.answers && attemptData.answers.length > 0) {
+                attemptData.answers.forEach((ans: any, index: number) => {
+                    const q = ans.question;
+                    if (!q) return;
+
+                    prompt += `\n--- Question ${index + 1} ---\n`;
+                    prompt += `Question Text: ${q.text}\n`;
+                    prompt += `Type: ${q.type}\n`;
+                    prompt += `Student Response: ${ans.response || '[No answer]'}\n`;
+                    
+                    if (q.correctAnswer) {
+                        prompt += `Expected Correct Answer: ${q.correctAnswer}\n`;
+                    }
+                    
+                    if (ans.isCorrect !== null) {
+                        prompt += `Marked as: ${ans.isCorrect ? 'Correct' : 'Incorrect'}\n`;
+                    }
+
+                    if (ans.aiFeedback) {
+                        prompt += `AI Essay Score: ${ans.aiScore}%\n`;
+                        prompt += `AI Essay Feedback: ${ans.aiFeedback}\n`;
+                    }
+                });
+            } else {
+                prompt += `\nNo answers were recorded for this attempt.\n`;
+            }
+
+            const response = await this.ai.models.generateContent({
+                model: 'gemini-2.5-pro', // using the pro model for deeper analytical insight
+                contents: prompt,
+                config: {
+                    temperature: 0.3,
+                }
+            });
+
+            if (!response.text) {
+                throw new Error("Empty response from Gemini");
+            }
+
+            return response.text.trim();
+
+        } catch (error) {
+            this.logger.error('AI attempt analysis failed', error);
+            return "> 🤖 **Analysis Error:** We encountered a network or system error while generating your personalized AI report. Please try clicking the generate button again later.";
+        }
+    }
 }

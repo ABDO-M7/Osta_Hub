@@ -24,6 +24,14 @@ export class AttemptsController {
         return this.attemptsService.submitAttempt(id, req.user.id, dto);
     }
 
+    @Post(':id/analyze')
+    analyzeAttempt(
+        @Param('id', ParseIntPipe) id: number,
+        @Request() req: any,
+    ) {
+        return this.attemptsService.analyzeAttempt(id, req.user.id);
+    }
+
     @Get(':id')
     getAttempt(@Param('id', ParseIntPipe) id: number, @Request() req: any) {
         return this.attemptsService.getAttempt(id, req.user.id);

@@ -6,13 +6,15 @@ import Link from "next/link"
 import { api } from "@/lib/api"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Award, ArrowLeft, CheckCircle2, XCircle, BrainCircuit } from "lucide-react"
+import { Award, ArrowLeft, CheckCircle2, XCircle, BrainCircuit, Sparkles, Loader2 } from "lucide-react"
+import ReactMarkdown from "react-markdown"
 
 export default function ExamResultsPage() {
     const params = useParams()
     const id = params?.attemptId
     const [attempt, setAttempt] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const [generating, setGenerating] = useState(false)
 
     useEffect(() => {
         if (!id) return
@@ -33,6 +35,19 @@ export default function ExamResultsPage() {
     if (!attempt) return <div className="p-8 text-center text-red-500">Attempt not found</div>
 
     const isPass = (attempt.score || 0) >= 60
+
+    const handleGenerateAnalysis = async () => {
+        if (!id) return
+        setGenerating(true)
+        try {
+            const res = await api.post(`/attempts/${id}/analyze`)
+            setAttempt({ ...attempt, aiAnalysis: res.data.aiAnalysis })
+        } catch (err) {
+            console.error(err)
+        } finally {
+            setGenerating(false)
+        }
+    }
 
     return (
         <div className="max-w-4xl mx-auto pb-24 space-y-8">
@@ -55,7 +70,65 @@ export default function ExamResultsPage() {
             </div>
 
             <div className="space-y-6">
-                <h2 className="text-2xl font-bold border-b pb-2">Detailed Feedback</h2>
+                {/* AI Analysis Section */}
+                <div className="mb-10">
+                    <Card className="border-violet-500/20 bg-[#0d0d14]/80 backdrop-blur-xl shadow-2xl overflow-hidden relative">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-violet-600/10 rounded-full blur-[80px] pointer-events-none" />
+                        <CardHeader className="border-b border-white/5 bg-white/[0.02]">
+                            <CardTitle className="flex items-center gap-2 text-xl font-bold text-white">
+                                <Sparkles className="w-5 h-5 text-violet-400" />
+                                AI Performance Analysis
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6">
+                            {attempt.aiAnalysis ? (
+                                <div className="prose prose-invert prose-violet max-w-none text-gray-300">
+                                    <ReactMarkdown
+                                        components={{
+                                            h1: ({node, ...props}) => <h1 className="text-2xl font-bold text-white mt-6 mb-4" {...props} />,
+                                            h2: ({node, ...props}) => <h2 className="text-xl font-semibold text-white mt-5 mb-3" {...props} />,
+                                            h3: ({node, ...props}) => <h3 className="text-lg font-medium text-white mt-4 mb-2" {...props} />,
+                                            p: ({node, ...props}) => <p className="mb-4 leading-relaxed" {...props} />,
+                                            ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-4 space-y-1" {...props} />,
+                                            li: ({node, ...props}) => <li className="text-gray-300" {...props} />,
+                                            strong: ({node, ...props}) => <strong className="font-semibold text-violet-300" {...props} />,
+                                            em: ({node, ...props}) => <em className="text-gray-400 italic" {...props} />,
+                                        }}
+                                    >
+                                        {attempt.aiAnalysis}
+                                    </ReactMarkdown>
+                                </div>
+                            ) : (
+                                <div className="text-center py-8">
+                                    <BrainCircuit className="w-12 h-12 text-violet-500/50 mx-auto mb-4" />
+                                    <h3 className="text-lg font-medium text-white mb-2">Unlock Your Personalized Insights</h3>
+                                    <p className="text-gray-400 mb-6 max-w-lg mx-auto">
+                                        Have our AI securely analyze your specific mistakes and generate a tailored revision roadmap just for you.
+                                    </p>
+                                    <Button
+                                        onClick={handleGenerateAnalysis}
+                                        disabled={generating}
+                                        className="bg-violet-600 hover:bg-violet-700 text-white gap-2 transition-all shadow-[0_0_20px_rgba(139,92,246,0.3)]"
+                                    >
+                                        {generating ? (
+                                            <>
+                                                <Loader2 className="w-4 h-4 animate-spin" />
+                                                Analyzing Your Exam...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Sparkles className="w-4 h-4" />
+                                                Generate AI Report
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <h2 className="text-2xl font-bold border-b pb-2 text-white/90">Detailed Feedback</h2>
 
                 {attempt.answers.map((ans: any, idx: number) => {
                     const q = ans.question
