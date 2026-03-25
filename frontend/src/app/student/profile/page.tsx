@@ -138,15 +138,15 @@ export default function StudentProfile() {
         },
         {
             color: '#060010',
-            label: 'Best Score',
-            title: `${typeof best === 'number' ? best.toFixed(1) : best}%`,
-            description: best >= 90 ? "Near perfect — excellent!" : best >= 70 ? "Great personal record!" : "Keep aiming higher!",
-        },
-        {
-            color: '#060010',
             label: 'Tech Quote',
             title: quote.split('»')[0],
             description: "Daily inspiration.",
+        },
+        {
+            color: '#060010',
+            label: 'Best Score',
+            title: `${typeof best === 'number' ? best.toFixed(1) : best}%`,
+            description: best >= 90 ? "Near perfect — excellent!" : best >= 70 ? "Great personal record!" : "Keep aiming higher!",
         },
         {
             color: '#060010',

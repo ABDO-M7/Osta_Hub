@@ -52,6 +52,15 @@ export default function AdminSubjectsPage() {
         }
     }
 
+    const handleUpdateOrder = async (id: number, order: number) => {
+        try {
+            await api.put(`/subjects/${id}`, { order })
+            fetchSubjects()
+        } catch (err) {
+            alert("Failed to update order")
+        }
+    }
+
     if (loading) return <div className="p-8 text-center text-gray-500">Loading subjects...</div>
 
     return (
@@ -99,7 +108,18 @@ export default function AdminSubjectsPage() {
                             style={{ backgroundImage: `url(${subject.imageUrl || 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800'})` }}
                         />
                         <CardHeader className="pb-3">
-                            <CardTitle>{subject.name}</CardTitle>
+                            <div className="flex justify-between items-start gap-2">
+                                <CardTitle>{subject.name}</CardTitle>
+                                <div className="flex flex-col items-end gap-1 shrink-0">
+                                    <Label className="text-[10px] text-gray-500 uppercase tracking-wider">Order</Label>
+                                    <Input 
+                                        type="number" 
+                                        className="h-7 w-16 px-2 text-xs text-center font-mono placeholder:text-gray-300" 
+                                        defaultValue={subject.order || 0}
+                                        onBlur={(e) => handleUpdateOrder(subject.id, parseInt(e.target.value) || 0)}
+                                    />
+                                </div>
+                            </div>
                             <div className="text-sm text-gray-500 flex gap-4 mt-2">
                                 <span>{subject._count?.lessons || 0} Lessons</span>
                                 <span>{subject._count?.exams || 0} Exams</span>

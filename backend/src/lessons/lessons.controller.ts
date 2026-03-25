@@ -11,8 +11,8 @@ export class LessonsController {
     constructor(private lessonsService: LessonsService) { }
 
     @Get()
-    findAll(@Query('subjectId') subjectId?: string) {
-        return this.lessonsService.findAll(subjectId ? parseInt(subjectId) : undefined);
+    findAll(@Query('subjectId') subjectId?: string, @Query('topic') topic?: string) {
+        return this.lessonsService.findAll(subjectId ? parseInt(subjectId) : undefined, topic);
     }
 
     @Get(':id')

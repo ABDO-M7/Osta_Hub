@@ -7,9 +7,12 @@ import { UpdateLessonDto } from './dto/update-lesson.dto';
 export class LessonsService {
     constructor(private prisma: PrismaService) { }
 
-    async findAll(subjectId?: number) {
+    async findAll(subjectId?: number, searchTopic?: string) {
         return this.prisma.lesson.findMany({
-            where: subjectId ? { subjectId } : undefined,
+            where: {
+                ...(subjectId && { subjectId }),
+                ...(searchTopic && { topics: { has: searchTopic } }),
+            },
             include: { blocks: { orderBy: { order: 'asc' } }, subject: true },
             orderBy: { order: 'asc' },
         });
@@ -30,6 +33,7 @@ export class LessonsService {
                 title: dto.title,
                 subjectId: dto.subjectId,
                 order: dto.order || 0,
+                topics: dto.topics || [],
                 blocks: {
                     create: dto.blocks?.map((block, index) => ({
                         type: block.type,
@@ -55,6 +59,7 @@ export class LessonsService {
             data: {
                 title: dto.title,
                 order: dto.order,
+                topics: dto.topics,
                 blocks: dto.blocks ? {
                     create: dto.blocks.map((block, index) => ({
                         type: block.type,

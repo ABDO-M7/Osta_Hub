@@ -147,13 +147,11 @@ export function Navbar() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -24 }}
                             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-                            className="w-full"
+                            className="w-full max-w-7xl mx-auto px-4"
                         >
-                            {/* Thin violet top accent line */}
-                            <div className="h-[2px] w-full bg-gradient-to-r from-transparent via-violet-500/80 to-transparent" />
-
-                            <div className="bg-[#04040a]/80 backdrop-blur-3xl shadow-[0_8px_60px_rgba(0,0,0,0.8)] border-b border-white/[0.06]">
-                                <div className="max-w-7xl mx-auto px-6 h-[60px] flex items-center gap-6">
+                            <div className="bg-[#04040a]/80 backdrop-blur-3xl shadow-[0_8px_60px_rgba(0,0,0,0.8)] border border-white/[0.06] rounded-full mt-2 relative overflow-hidden">
+                                <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-violet-500/80 to-transparent" />
+                                <div className="px-6 h-[60px] flex items-center gap-6">
 
                                     {/* Logo - left */}
                                     <Link href={homeHref} className="flex items-center gap-2.5 group shrink-0">

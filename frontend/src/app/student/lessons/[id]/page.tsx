@@ -84,6 +84,8 @@ export default function LessonPage() {
 
     return (
         <div className="max-w-3xl mx-auto pb-32 relative min-h-screen">
+            {/* Override global theme background for this specific page to enhance reading focus */}
+            <style dangerouslySetInnerHTML={{ __html: 'body { background: #000 !important; }' }} />
             <Link href={`/student/subjects/${lesson.subjectId}`} className="inline-flex items-center text-sm font-medium text-violet-400 hover:text-violet-300 mb-6 transition-colors">
                 <ArrowLeft className="h-4 w-4 mr-1" />
                 Back to {lesson.subject?.name || 'Subject'}

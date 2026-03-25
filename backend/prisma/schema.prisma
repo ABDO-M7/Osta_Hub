@@ -57,6 +57,8 @@ model Subject {
   name        String
   description String?
   imageUrl    String?
+  tracks      String[]     @default([]) // e.g. ["Machine Learning", "Tech"]
+  order       Int          @default(0)  // for admin manual sorting
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
   lessons     Lesson[]
@@ -71,6 +73,7 @@ model Lesson {
   title      String
   subjectId  Int
   order      Int              @default(0)
+  topics     String[]         @default([]) // Key concepts this lesson covers
   createdAt  DateTime         @default(now())
   updatedAt  DateTime         @updatedAt
   subject    Subject          @relation(fields: [subjectId], references: [id], onDelete: Cascade)

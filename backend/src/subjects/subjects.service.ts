@@ -12,7 +12,7 @@ export class SubjectsService {
             include: {
                 _count: { select: { lessons: true, exams: true } },
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
         });
     }
 

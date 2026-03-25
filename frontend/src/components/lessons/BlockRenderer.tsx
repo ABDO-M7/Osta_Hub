@@ -38,7 +38,7 @@ export function BlockRenderer({ block }: { block: any }) {
             })
 
             // 2. Collapsible Headers Logic
-            const headers = textRef.current.querySelectorAll('h1, h2');
+            const headers = textRef.current.querySelectorAll('h1, h2, h3');
             headers.forEach((header: Element) => {
                 const el = header as HTMLElement;
                 if (el.hasAttribute('data-collapsible')) return;
@@ -53,7 +53,7 @@ export function BlockRenderer({ block }: { block: any }) {
                 caret.className = 'header-caret flex-shrink-0 mt-1';
                 el.prepend(caret);
                 
-                // Click to collapse siblings
+                // Click to collapse siblings (both inner and cross-block)
                 el.addEventListener('click', () => {
                     const isCollapsed = el.hasAttribute('data-collapsed');
                     if (isCollapsed) {
@@ -65,23 +65,53 @@ export function BlockRenderer({ block }: { block: any }) {
                     }
                     
                     const level = parseInt(el.tagName[1]);
-                    let node = el.nextElementSibling as HTMLElement | null;
                     
-                    while (node) {
-                        if (node.tagName.match(/^H[1-6]$/)) {
-                            const nextLevel = parseInt(node.tagName[1]);
-                            if (nextLevel <= level) break; // Break on same or higher importance header
+                    // 1. Traverse siblings INSIDE this same text block
+                    let innerNode = el.nextElementSibling as HTMLElement | null;
+                    let hitBreakInside = false;
+                    while (innerNode) {
+                        if (innerNode.tagName.match(/^H[1-6]$/)) {
+                            const nextLevel = parseInt(innerNode.tagName[1]);
+                            if (nextLevel <= level) {
+                                hitBreakInside = true;
+                                break; // Break on same or higher importance header
+                            }
                         }
                         
-                        // We use a CSS class or inline style.
                         if (isCollapsed) {
-                            node.style.display = '';
-                            node.style.opacity = '1';
+                            innerNode.style.display = '';
+                            innerNode.style.opacity = '1';
                         } else {
-                            node.style.display = 'none';
-                            node.style.opacity = '0';
+                            innerNode.style.display = 'none';
+                            innerNode.style.opacity = '0';
                         }
-                        node = node.nextElementSibling as HTMLElement | null;
+                        innerNode = innerNode.nextElementSibling as HTMLElement | null;
+                    }
+
+                    // 2. Traverse sibling BLOCKS (other BlockRenderers) if we didn't hit a break inside
+                    if (!hitBreakInside) {
+                        const blockContainer = el.closest('.block-container') as HTMLElement | null;
+                        if (blockContainer) {
+                            let nextBlock = blockContainer.nextElementSibling as HTMLElement | null;
+                            while (nextBlock) {
+                                // Check if next block contains a header that should break us
+                                // We only check direct prose headers to avoid deeply nested false positives
+                                const nextBlockHeader = nextBlock.querySelector('.prose h1, .prose h2, .prose h3, .prose h4, .prose h5, .prose h6');
+                                if (nextBlockHeader) {
+                                    const nextLevel = parseInt(nextBlockHeader.tagName[1]);
+                                    if (nextLevel <= level) break;
+                                }
+
+                                if (isCollapsed) {
+                                    nextBlock.style.display = '';
+                                    nextBlock.style.opacity = '1';
+                                } else {
+                                    nextBlock.style.display = 'none';
+                                    nextBlock.style.opacity = '0';
+                                }
+                                nextBlock = nextBlock.nextElementSibling as HTMLElement | null;
+                            }
+                        }
                     }
                 });
             });
@@ -91,7 +121,7 @@ export function BlockRenderer({ block }: { block: any }) {
     switch (type) {
         case 'paragraph':
             return (
-                <div className="my-6">
+                <div className="my-6 block-container">
                     {isAdvanced && <AdvancedBadge />}
                     <div
                         ref={textRef}
@@ -109,7 +139,7 @@ export function BlockRenderer({ block }: { block: any }) {
             if (images.length === 0) return null;
 
             return (
-                <div className="my-6">
+                <div className="my-6 block-container">
                     {isAdvanced && <AdvancedBadge />}
                     <div className="space-y-6 lg:space-y-8">
                         {images.map((img: any, i: number) => img.url && (
@@ -125,7 +155,7 @@ export function BlockRenderer({ block }: { block: any }) {
 
         case 'code':
             return (
-                <div className="my-6">
+                <div className="my-6 block-container">
                     {isAdvanced && <AdvancedBadge />}
                     <div className="rounded-xl overflow-hidden border border-white/10 shadow-lg">
                         {/* Header bar */}
@@ -151,7 +181,7 @@ export function BlockRenderer({ block }: { block: any }) {
 
         case 'code-execution':
             return (
-                <div className="my-6">
+                <div className="my-6 block-container">
                     {isAdvanced && <AdvancedBadge />}
                     <LiveCodeBlock defaultCode={content.code} />
                 </div>
@@ -159,7 +189,7 @@ export function BlockRenderer({ block }: { block: any }) {
 
         case 'html-sandbox':
             return (
-                <div className="my-6">
+                <div className="my-6 block-container">
                     {isAdvanced && <AdvancedBadge />}
                     <HtmlSandboxBlock defaultHtml={content.html} />
                 </div>
@@ -167,7 +197,7 @@ export function BlockRenderer({ block }: { block: any }) {
 
         case 'quiz':
             return (
-                <div className="my-6">
+                <div className="my-6 block-container">
                     {isAdvanced && <AdvancedBadge />}
                     <MiniQuiz content={content} />
                 </div>

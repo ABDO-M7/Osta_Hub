@@ -9,6 +9,7 @@ import { BookOpen, Search, PlayCircle } from "lucide-react"
 export default function StudentDashboard() {
     const [enrollments, setEnrollments] = useState<any[]>([])
     const [search, setSearch] = useState("")
+    const [selectedTrack, setSelectedTrack] = useState<string>("All")
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -25,7 +26,13 @@ export default function StudentDashboard() {
         fetchEnrollments()
     }, [])
 
-    const filtered = enrollments.filter(e => e.subject?.name.toLowerCase().includes(search.toLowerCase()))
+    const availableTracks = Array.from(new Set(enrollments.flatMap(e => e.subject?.tracks || [])))
+    
+    const filtered = enrollments.filter(e => {
+        const matchesSearch = e.subject?.name.toLowerCase().includes(search.toLowerCase())
+        const matchesTrack = selectedTrack === "All" || (e.subject?.tracks || []).includes(selectedTrack)
+        return matchesSearch && matchesTrack
+    })
 
     if (loading) return (
         <div className="p-8 text-center text-gray-500 flex flex-col items-center justify-center min-h-[60vh]">
@@ -41,15 +48,29 @@ export default function StudentDashboard() {
                     <h1 className="text-3xl font-bold tracking-tight text-white mb-2">My Progress</h1>
                     <p className="text-gray-400">Jump back into your active courses.</p>
                 </div>
-                <div className="relative w-full md:w-72">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
-                    <input 
-                        type="text" 
-                        placeholder="Search your courses..." 
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="w-full bg-[#12121a] border border-[#2a2a3a] text-white rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-all"
-                    />
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    {availableTracks.length > 0 && (
+                        <select
+                            value={selectedTrack}
+                            onChange={(e) => setSelectedTrack(e.target.value)}
+                            className="bg-[#12121a] border border-[#2a2a3a] text-white rounded-lg px-4 py-2 focus:outline-none focus:border-violet-500/50 transition-all font-medium text-sm"
+                        >
+                            <option value="All">All Tracks</option>
+                            {availableTracks.map(t => (
+                                <option key={t as string} value={t as string}>{t as string}</option>
+                            ))}
+                        </select>
+                    )}
+                    <div className="relative w-full sm:w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
+                        <input 
+                            type="text" 
+                            placeholder="Search your courses..." 
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            className="w-full bg-[#12121a] border border-[#2a2a3a] text-white rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-all text-sm"
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -70,6 +91,13 @@ export default function StudentDashboard() {
                                     </div>
                                 </div>
                                 <div className="px-5 pt-4 pb-2 flex-1">
+                                    <div className="flex gap-1.5 mb-2 mt-1 flex-wrap">
+                                        {(enr.subject.tracks || []).slice(0, 3).map((t: string) => (
+                                            <span key={t} className="px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 text-violet-300 text-[10px] font-bold tracking-wider uppercase">
+                                                {t}
+                                            </span>
+                                        ))}
+                                    </div>
                                     <h3 className="font-bold text-white group-hover:text-violet-400 transition-colors mb-1">{enr.subject.name}</h3>
                                     <p className="text-gray-400 text-sm line-clamp-2 mt-1">{enr.subject.description}</p>
                                 </div>

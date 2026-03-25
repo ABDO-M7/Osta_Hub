@@ -57,6 +57,13 @@ export default function AdminSubjectDetailsPage() {
         } catch (err) { alert("Failed to delete lesson") }
     }
 
+    const handleUpdateLessonOrder = async (lessonId: number, order: number) => {
+        try {
+            await api.put(`/lessons/${lessonId}`, { order })
+            fetchSubject()
+        } catch (err) { alert("Failed to update lesson order") }
+    }
+
     const handleDeleteExam = async (examId: number) => {
         if (!confirm('Are you sure you want to delete this exam?')) return
         try {
@@ -155,15 +162,26 @@ export default function AdminSubjectDetailsPage() {
                                         <h3 className="font-semibold text-gray-900">{lesson.title}</h3>
                                     </div>
                                 </div>
-                                <div className="flex gap-2">
-                                    <Link href={`/admin/lessons/editor?subjectId=${subject.id}&lessonId=${lesson.id}`}>
-                                        <Button variant="outline" size="sm" className="h-8"><Edit2 className="w-3 h-3 mr-1" /> Edit Blocks</Button>
-                                    </Link>
-                                    <Button variant="outline" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDeleteLesson(lesson.id)}>
-                                        <Trash2 className="w-3 h-3" />
-                                    </Button>
-                                </div>
-                            </Card>
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex flex-col items-center gap-1">
+                                            <Label className="text-[10px] text-gray-500 uppercase tracking-wider">Order</Label>
+                                            <Input 
+                                                type="number" 
+                                                className="h-7 w-16 px-2 text-xs text-center font-mono placeholder:text-gray-300 bg-white" 
+                                                defaultValue={lesson.order || 0}
+                                                onBlur={(e) => handleUpdateLessonOrder(lesson.id, parseInt(e.target.value) || 0)}
+                                            />
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <Link href={`/admin/lessons/editor?subjectId=${subject.id}&lessonId=${lesson.id}`}>
+                                                <Button variant="outline" size="sm" className="h-8"><Edit2 className="w-3 h-3 mr-1" /> Edit Blocks</Button>
+                                            </Link>
+                                            <Button variant="outline" size="icon" className="h-8 w-8 text-red-500" onClick={() => handleDeleteLesson(lesson.id)}>
+                                                <Trash2 className="w-3 h-3" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </Card>
                         ))}
                         {(!subject.lessons || subject.lessons.length === 0) && (
                             <div className="text-center p-8 bg-gray-50 border border-dashed rounded-xl text-gray-500">

@@ -7,13 +7,14 @@ import { api } from "@/lib/api"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
-import { BookOpen, FileText, PlayCircle } from "lucide-react"
+import { BookOpen, FileText, PlayCircle, Search } from "lucide-react"
 
 export default function SubjectPage() {
     const params = useParams()
     const id = params?.id
     const [subject, setSubject] = useState<any>(null)
     const [loading, setLoading] = useState(true)
+    const [searchTopic, setSearchTopic] = useState("")
 
     useEffect(() => {
         if (!id) return
@@ -32,6 +33,12 @@ export default function SubjectPage() {
 
     if (loading) return <div className="p-8 text-center text-gray-500">Loading subject...</div>
     if (!subject) return <div className="p-8 text-center text-red-500">Subject not found</div>
+
+    const filteredLessons = subject.lessons?.filter((l: any) => {
+        if (!searchTopic) return true;
+        const s = searchTopic.toLowerCase();
+        return l.title.toLowerCase().includes(s) || (l.topics || []).some((t: string) => t.toLowerCase().includes(s));
+    }) || [];
 
     return (
         <div className="space-y-6">
@@ -53,11 +60,36 @@ export default function SubjectPage() {
                 </TabsList>
 
                 <TabsContent value="lessons" className="mt-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-xl font-semibold text-white">Course Lessons</h3>
+                        {subject.lessons?.length > 0 && (
+                            <div className="relative w-full sm:w-64">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
+                                <input 
+                                    type="text" 
+                                    placeholder="Search topic or title..." 
+                                    value={searchTopic}
+                                    onChange={e => setSearchTopic(e.target.value)}
+                                    className="w-full bg-[#12121a] border border-[#2a2a3a] text-white rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-all text-sm"
+                                />
+                            </div>
+                        )}
+                    </div>
+                    
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {subject.lessons?.map((lesson: any, index: number) => (
+                        {filteredLessons.map((lesson: any, index: number) => (
                             <Card key={lesson.id} className="flex flex-col">
                                 <CardHeader>
-                                    <CardDescription>Lesson {index + 1}</CardDescription>
+                                    <div className="flex justify-between items-start mb-1">
+                                        <CardDescription>Lesson {subject.lessons.findIndex((l:any) => l.id === lesson.id) + 1}</CardDescription>
+                                    </div>
+                                    <div className="flex gap-1.5 mb-2 mt-1 flex-wrap">
+                                        {(lesson.topics || []).map((t: string) => (
+                                            <span key={t} className="px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 text-violet-300 text-[10px] font-bold tracking-wider uppercase">
+                                                {t}
+                                            </span>
+                                        ))}
+                                    </div>
                                     <CardTitle>{lesson.title}</CardTitle>
                                 </CardHeader>
                                 <CardContent className="mt-auto pt-4">
@@ -72,6 +104,11 @@ export default function SubjectPage() {
                         {(!subject.lessons || subject.lessons.length === 0) && (
                             <div className="col-span-full text-center p-8 bg-[#12121a] border border-[#1e1e2e] rounded-xl text-gray-500">
                                 No lessons available for this subject yet.
+                            </div>
+                        )}
+                        {subject.lessons?.length > 0 && filteredLessons.length === 0 && (
+                            <div className="col-span-full text-center p-8 text-gray-500">
+                                No lessons match your topic search.
                             </div>
                         )}
                     </div>

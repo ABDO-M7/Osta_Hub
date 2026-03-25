@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsArray, IsInt } from 'class-validator';
 
 export class CreateSubjectDto {
     @IsString()
@@ -11,4 +11,13 @@ export class CreateSubjectDto {
     @IsOptional()
     @IsString()
     imageUrl?: string;
+
+    @IsOptional()
+    @IsArray()
+    @IsString({ each: true })
+    tracks?: string[];
+
+    @IsOptional()
+    @IsInt()
+    order?: number;
 }

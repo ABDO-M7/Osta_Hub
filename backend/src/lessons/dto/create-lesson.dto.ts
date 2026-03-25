@@ -26,6 +26,11 @@ export class CreateLessonDto {
 
     @IsOptional()
     @IsArray()
+    @IsString({ each: true })
+    topics?: string[];
+
+    @IsOptional()
+    @IsArray()
     @ValidateNested({ each: true })
     @Type(() => LessonBlockDto)
     blocks?: LessonBlockDto[];
