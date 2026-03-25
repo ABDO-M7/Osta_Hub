@@ -120,7 +120,7 @@ export default function AboutPage() {
                 <div className="relative z-10">
                     <h2 className="text-4xl md:text-5xl font-black mb-6" style={{ color: "#f7ebf9" }}>Ready to level up?</h2>
                     <p className="text-lg mb-8" style={{ color: "rgba(247,235,249,0.6)" }}>
-                        Join thousands of students already learning on <Logo />.
+                        Join the family of <Logo />.
                     </p>
                     <Link
                         href="/login"
@@ -144,7 +144,7 @@ export default function AboutPage() {
 
             {/* ─── Footer ───────────────────────────────────────────────── */}
             <footer className="text-center py-8 border-t text-sm" style={{ borderColor: "rgba(255,255,255,0.06)", color: "rgba(247,235,249,0.3)" }}>
-                © 2025 <Logo /> — Built with ❤️ for ambitious learners
+                © 2026 <Logo /> — Built with ❤️ for ambitious learners
             </footer>
         </main>
     )
