@@ -7,41 +7,41 @@ import { Logo } from "@/components/ui/Logo"
 const features = [
     {
         icon: "🧠",
-        title: "AI-Powered Grading",
-        description: "Submit essays and get instant, detailed AI feedback powered by Google Gemini. No more waiting for manual corrections.",
+        title: "AI Grading & Analysis",
+        description: "Submit essays for instant AI feedback. After exams, Gemini identifies your weak points and generates a personalized revision roadmap.",
     },
     {
         icon: "📚",
-        title: "Structured Subjects",
-        description: "Every course is organized into elegant, block-based lessons — text, videos, quizzes — crafted by expert instructors.",
+        title: "Block-Based Learning",
+        description: "Every subject is organized into rich, interactive blocks — live code, math formulas, reading content, and embedded quizzes.",
     },
     {
-        icon: "⏱️",
-        title: "Timed Exams",
-        description: "Simulate real exam pressure with our auto-graded timed exams. Get scored immediately after submission.",
+        icon: "🔥",
+        title: "Advanced Tracking & Streaks",
+        description: "Monitor your scores, build unbreakable daily learning streaks, and track your actual lesson completion progress automatically.",
     },
     {
-        icon: "📊",
-        title: "Progress Tracking",
-        description: "Monitor your scores, completed lessons, and performance trends across all your subjects in one dashboard.",
+        icon: "📝",
+        title: "Interactive Notebooks",
+        description: "Jot down your private study notes on a sliding floating panel without ever leaving the lesson you are currently reading.",
     },
     {
         icon: "🚀",
-        title: "Any Device",
-        description: "Fully responsive design so you can study from your phone, tablet, or desktop — seamlessly.",
+        title: "Any Device, Anywhere",
+        description: "Fully responsive design so you can study seamlessly from your phone, tablet, or desktop. Pick up exactly where you left off.",
     },
     {
         icon: "🔐",
-        title: "Secure & Private",
-        description: "OAuth login via Google and GitHub. Your data is protected and we never store your passwords.",
+        title: "Secure & Frictionless",
+        description: "Instant OAuth login via Google and GitHub. Your data is protected and your learning journey is personalized and private.",
     },
 ]
 
 export default function AboutPage() {
     return (
-        <main className="min-h-screen" style={{ background: "#000000", color: "#f7ebf9" }}>
+        <main className="min-h-screen relative overflow-hidden text-white/90">
             {/* ─── Hero ─────────────────────────────────────────────────── */}
-            <section className="text-center px-4 py-24 relative overflow-hidden">
+            <section className="text-center px-4 py-24 relative z-10">
                 {/* Glow */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full pointer-events-none"
                     style={{ background: "radial-gradient(ellipse, rgba(57,12,237,0.2) 0%, transparent 70%)", filter: "blur(60px)" }} />

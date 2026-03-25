@@ -40,6 +40,8 @@ export function BlockRenderer({ block }: { block: any }) {
             // 2. Collapsible Headers Logic
             const headers = textRef.current.querySelectorAll('h1, h2');
             headers.forEach((header: Element) => {
+                if (isAdvanced) return; // Prevent advanced block headers from collapsing
+
                 const el = header as HTMLElement;
                 if (el.hasAttribute('data-collapsible')) return;
                 el.setAttribute('data-collapsible', 'true');
@@ -95,7 +97,7 @@ export function BlockRenderer({ block }: { block: any }) {
                     {isAdvanced && <AdvancedBadge />}
                     <div
                         ref={textRef}
-                        className="prose prose-blue max-w-none text-gray-700 leading-relaxed text-lg [&_h1]:text-3xl [&_h2]:text-2xl [&_h3]:text-xl"
+                        className="prose prose-blue max-w-none text-gray-700 leading-relaxed text-lg [&_h1]:text-3xl [&_h2]:text-2xl [&_h3]:text-xl [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-1"
                         dangerouslySetInnerHTML={{ __html: content.text }}
                     />
                 </div>
