@@ -238,6 +238,7 @@ function EditorContent() {
     const lessonId = searchParams?.get('lessonId')
 
     const [title, setTitle] = useState("")
+    const [topics, setTopics] = useState("")
     const [blocks, setBlocks] = useState<any[]>([])
     const [loading, setLoading] = useState(!!lessonId)
     const [saving, setSaving] = useState(false)
@@ -247,6 +248,7 @@ function EditorContent() {
         if (lessonId) {
             api.get(`/lessons/${lessonId}`).then(res => {
                 setTitle(res.data.title)
+                setTopics(res.data.topics?.join(', ') || "")
                 setBlocks(res.data.blocks.map((b: any) => ({ ...b, id: b.id?.toString() || Math.random().toString() })))
                 setLoading(false)
             })
@@ -260,10 +262,11 @@ function EditorContent() {
         if (!title) return alert('Title is required')
         setSaving(true)
         const cleanBlocks = blocks.map((b, idx) => ({ type: b.type, content: b.content, order: idx }))
+        const topicsArray = topics ? topics.split(',').map(t => t.trim()).filter(Boolean) : []
         try {
             lessonId
-                ? await api.put(`/lessons/${lessonId}`, { title, blocks: cleanBlocks })
-                : await api.post(`/lessons`, { title, subjectId: parseInt(subjectId as string), blocks: cleanBlocks })
+                ? await api.put(`/lessons/${lessonId}`, { title, topics: topicsArray, blocks: cleanBlocks })
+                : await api.post(`/lessons`, { title, topics: topicsArray, subjectId: parseInt(subjectId as string), blocks: cleanBlocks })
             router.push(`/admin/subjects/${subjectId}`)
         } catch {
             alert("Failed to save lesson")
@@ -325,12 +328,20 @@ function EditorContent() {
                     <Link href={`/admin/subjects/${subjectId}`}>
                         <Button variant="ghost" size="icon"><ArrowLeft className="w-5 h-5" /></Button>
                     </Link>
-                    <Input
-                        value={title}
-                        onChange={e => setTitle(e.target.value)}
-                        placeholder="Lesson Title"
-                        className="text-2xl font-bold h-12 border-none shadow-none focus-visible:ring-0 px-0 bg-transparent w-[400px]"
-                    />
+                    <div className="flex flex-col gap-1">
+                        <Input
+                            value={title}
+                            onChange={e => setTitle(e.target.value)}
+                            placeholder="Lesson Title"
+                            className="text-2xl font-bold h-10 border-none shadow-none focus-visible:ring-0 px-0 bg-transparent w-[400px]"
+                        />
+                        <Input
+                            value={topics}
+                            onChange={e => setTopics(e.target.value)}
+                            placeholder="Topics covered (comma-separated, e.g. Algorithms, Security)"
+                            className="text-sm h-6 border-none shadow-none focus-visible:ring-0 px-0 bg-transparent w-[400px] text-gray-400"
+                        />
+                    </div>
                 </div>
                 <Button onClick={handleSave} disabled={saving}>
                     <Save className="w-4 h-4 mr-2" />{saving ? 'Saving...' : 'Save Lesson'}

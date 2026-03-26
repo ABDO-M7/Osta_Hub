@@ -86,6 +86,13 @@ export default function CoursesPage() {
                                         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0f] via-[#0a0a0f]/40 to-transparent" />
                                     </div>
                                     <div className="px-5 pt-4 pb-2 flex-1">
+                                        <div className="flex gap-1.5 mb-2 flex-wrap">
+                                            {(subject.tracks || []).slice(0, 3).map((t: string) => (
+                                                <span key={t} className="px-2 py-0.5 rounded bg-violet-500/10 border border-violet-500/20 text-violet-300 text-[10px] font-bold tracking-wider uppercase">
+                                                    {t}
+                                                </span>
+                                            ))}
+                                        </div>
                                         <h3 className="text-xl font-bold text-white group-hover:text-violet-300 transition-colors mb-2">{subject.name}</h3>
                                         <p className="text-gray-400 text-sm line-clamp-2 leading-relaxed">{subject.description}</p>
                                     </div>

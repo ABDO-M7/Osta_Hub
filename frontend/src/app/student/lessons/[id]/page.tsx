@@ -84,7 +84,8 @@ export default function LessonPage() {
 
     return (
         <div className="max-w-3xl mx-auto pb-32 relative min-h-screen">
-            {/* Override global theme background for this specific page to enhance reading focus */}
+            {/* Absolute overlay to override the layout's global unsplash background explicitly for lessons */}
+            <div className="fixed inset-0 bg-black -z-10" />
             <style dangerouslySetInnerHTML={{ __html: 'body { background: #000 !important; }' }} />
             <Link href={`/student/subjects/${lesson.subjectId}`} className="inline-flex items-center text-sm font-medium text-violet-400 hover:text-violet-300 mb-6 transition-colors">
                 <ArrowLeft className="h-4 w-4 mr-1" />

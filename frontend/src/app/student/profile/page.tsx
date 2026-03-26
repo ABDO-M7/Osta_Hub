@@ -307,6 +307,7 @@ export default function StudentProfile() {
                 <div className="w-full flex justify-center">
                     <MagicBento
                         cardData={bentoCards}
+                        textAutoHide={false}
                         enableStars={true}
                         enableSpotlight={true}
                         enableBorderGlow={true}

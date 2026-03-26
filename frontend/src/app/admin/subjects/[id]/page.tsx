@@ -17,14 +17,14 @@ export default function AdminSubjectDetailsPage() {
     const [subject, setSubject] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [editMode, setEditMode] = useState(false)
-    const [editForm, setEditForm] = useState({ name: '', description: '', imageUrl: '' })
+    const [editForm, setEditForm] = useState({ name: '', description: '', imageUrl: '', tracks: '' })
     const [saving, setSaving] = useState(false)
 
     const fetchSubject = async () => {
         try {
             const res = await api.get(`/subjects/${id}`)
             setSubject(res.data)
-            setEditForm({ name: res.data.name, description: res.data.description || '', imageUrl: res.data.imageUrl || '' })
+            setEditForm({ name: res.data.name, description: res.data.description || '', imageUrl: res.data.imageUrl || '', tracks: res.data.tracks?.join(', ') || '' })
         } catch (err) {
             console.error(err)
         } finally {
@@ -39,7 +39,11 @@ export default function AdminSubjectDetailsPage() {
     const handleSaveInfo = async () => {
         setSaving(true)
         try {
-            await api.put(`/subjects/${id}`, editForm)
+            const payload = {
+                ...editForm,
+                tracks: editForm.tracks ? editForm.tracks.split(',').map((t: string) => t.trim()).filter(Boolean) : []
+            }
+            await api.put(`/subjects/${id}`, payload)
             await fetchSubject()
             setEditMode(false)
         } catch (err) {
@@ -126,6 +130,14 @@ export default function AdminSubjectDetailsPage() {
                                     placeholder="Short course description..."
                                 />
                             </div>
+                            <div className="space-y-2 md:col-span-2">
+                                <Label>Associated Tracks (comma-separated)</Label>
+                                <Input
+                                    value={editForm.tracks}
+                                    onChange={e => setEditForm({ ...editForm, tracks: e.target.value })}
+                                    placeholder="Machine Learning, Security..."
+                                />
+                            </div>
                         </div>
                         <div className="flex gap-2 pt-2">
                             <Button onClick={handleSaveInfo} disabled={saving}>
@@ -159,7 +171,16 @@ export default function AdminSubjectDetailsPage() {
                                         {index + 1}
                                     </div>
                                     <div>
-                                        <h3 className="font-semibold text-gray-900">{lesson.title}</h3>
+                                        <h3 className="font-semibold text-gray-900 mb-0.5">{lesson.title}</h3>
+                                        {lesson.topics && lesson.topics.length > 0 && (
+                                            <div className="flex gap-1 flex-wrap">
+                                                {lesson.topics.map((t: string) => (
+                                                    <span key={t} className="px-1.5 py-0.5 rounded bg-violet-50 border border-violet-100 text-[10px] text-violet-600 font-medium tracking-wide max-w-[120px] truncate">
+                                                        {t}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                     <div className="flex items-center gap-4">

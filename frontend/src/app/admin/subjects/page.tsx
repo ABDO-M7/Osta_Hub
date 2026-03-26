@@ -13,7 +13,7 @@ export default function AdminSubjectsPage() {
     const [subjects, setSubjects] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [isCreating, setIsCreating] = useState(false)
-    const [newSubject, setNewSubject] = useState({ name: '', description: '', imageUrl: '' })
+    const [newSubject, setNewSubject] = useState({ name: '', description: '', imageUrl: '', tracks: '' })
 
     const fetchSubjects = async () => {
         try {
@@ -33,9 +33,13 @@ export default function AdminSubjectsPage() {
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault()
         try {
-            await api.post("/subjects", newSubject)
+            const payload = {
+                ...newSubject,
+                tracks: newSubject.tracks ? newSubject.tracks.split(',').map(t => t.trim()).filter(Boolean) : []
+            }
+            await api.post("/subjects", payload)
             setIsCreating(false)
-            setNewSubject({ name: '', description: '', imageUrl: '' })
+            setNewSubject({ name: '', description: '', imageUrl: '', tracks: '' })
             fetchSubjects()
         } catch (err) {
             alert("Failed to create subject")
@@ -94,6 +98,10 @@ export default function AdminSubjectsPage() {
                                 <Label>Cover Image URL (optional)</Label>
                                 <Input value={newSubject.imageUrl} onChange={e => setNewSubject({ ...newSubject, imageUrl: e.target.value })} placeholder="https://unsplash.com/..." />
                             </div>
+                            <div className="space-y-2">
+                                <Label>Associated Tracks (comma-separated)</Label>
+                                <Input value={newSubject.tracks} onChange={e => setNewSubject({ ...newSubject, tracks: e.target.value })} placeholder="Machine Learning, Security, Design" />
+                            </div>
                             <Button type="submit">Save Subject</Button>
                         </form>
                     </CardContent>
@@ -109,7 +117,18 @@ export default function AdminSubjectsPage() {
                         />
                         <CardHeader className="pb-3">
                             <div className="flex justify-between items-start gap-2">
-                                <CardTitle>{subject.name}</CardTitle>
+                                <div>
+                                    <CardTitle className="mb-1.5">{subject.name}</CardTitle>
+                                    {subject.tracks && subject.tracks.length > 0 && (
+                                        <div className="flex gap-1 mb-1 flex-wrap">
+                                            {subject.tracks.map((t: string) => (
+                                                <span key={t} className="px-1.5 py-0.5 rounded bg-blue-50 border border-blue-100 text-[10px] text-blue-600 font-medium tracking-wide">
+                                                    {t}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
                                 <div className="flex flex-col items-end gap-1 shrink-0">
                                     <Label className="text-[10px] text-gray-500 uppercase tracking-wider">Order</Label>
                                     <Input 
