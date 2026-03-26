@@ -61,12 +61,25 @@ export default function ExamResultsPage() {
                 <Award className="h-20 w-20 mb-4 drop-shadow-lg text-white" />
                 <h1 className="text-3xl font-bold mb-2 z-10">{attempt.exam.title}</h1>
                 <p className="text-green-50 text-xl z-10 opacity-90">{attempt.exam.subject.name}</p>
-                <div className="mt-8 text-6xl font-extrabold drop-shadow-md z-10 flex items-baseline">
-                    {attempt.score}<span className="text-3xl ml-1 opacity-80">%</span>
-                </div>
-                <p className="mt-4 font-medium text-lg z-10 bg-black/20 px-6 py-2 rounded-full">
-                    {isPass ? 'Congratulations! You passed.' : 'Keep studying. You can try again.'}
-                </p>
+            <div className="mt-8 z-10 flex flex-col items-center">
+                {attempt.totalPoints ? (
+                    <>
+                        <div className="text-6xl font-extrabold drop-shadow-md flex items-baseline gap-2">
+                            <span>{Math.round((attempt.score / 100) * attempt.totalPoints)}</span>
+                            <span className="text-3xl opacity-60">/</span>
+                            <span className="text-4xl opacity-80">{attempt.totalPoints}</span>
+                        </div>
+                        <div className="mt-2 text-2xl font-semibold opacity-80">{Math.round(attempt.score || 0)}%</div>
+                    </>
+                ) : (
+                    <div className="text-6xl font-extrabold drop-shadow-md flex items-baseline">
+                        {Math.round(attempt.score || 0)}<span className="text-3xl ml-1 opacity-80">%</span>
+                    </div>
+                )}
+            </div>
+            <p className="mt-4 font-medium text-lg z-10 bg-black/20 px-6 py-2 rounded-full">
+                {isPass ? 'Congratulations! You passed.' : 'Keep studying. You can try again.'}
+            </p>
             </div>
 
             <div className="space-y-6">

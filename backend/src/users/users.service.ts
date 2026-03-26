@@ -36,7 +36,7 @@ export class UsersService {
         avatar?: string;
         emailVerified?: boolean;
     }) {
-        return this.prisma.user.create({
+        const user = await this.prisma.user.create({
             data: {
                 email: data.email,
                 password: data.password || null,
@@ -48,6 +48,18 @@ export class UsersService {
                 emailVerified: data.emailVerified || false,
             },
         });
+
+        // Send a welcome notification into the global feed
+        try {
+            await this.prisma.notification.create({
+                data: {
+                    title: `🎉 Welcome to NeuroTron, ${user.name.split(' ')[0]}!`,
+                    message: `We're thrilled to have you on board. Explore your course catalog, start learning, and track your progress — your journey begins now. Good luck! 🚀`,
+                }
+            });
+        } catch (_) { /* non-blocking */ }
+
+        return user;
     }
 
     async linkOAuth(userId: number, provider: string, providerId: string, avatar?: string) {
@@ -103,11 +115,34 @@ export class UsersService {
     }
 
     async getEnrollments(userId: number) {
-        return this.prisma.enrollment.findMany({
+        const enrollments = await this.prisma.enrollment.findMany({
             where: { userId },
-            include: { subject: true },
+            include: { subject: { include: { lessons: { select: { id: true } } } } },
             orderBy: { updatedAt: 'desc' },
         });
+
+        // Dynamically compute progress for each enrollment
+        const result = await Promise.all(enrollments.map(async (enr) => {
+            const totalLessons = enr.subject.lessons.length;
+            if (totalLessons === 0) return { ...enr, progress: 0 };
+
+            const completedCount = await this.prisma.lessonProgress.count({
+                where: { userId, completed: true, lesson: { subjectId: enr.subjectId } }
+            });
+            const dynamicProgress = Math.round((completedCount / totalLessons) * 100 * 10) / 10;
+
+            // Also persist the updated value so dashboard is correct
+            if (Math.abs(dynamicProgress - enr.progress) > 0.5) {
+                await this.prisma.enrollment.updateMany({
+                    where: { userId, subjectId: enr.subjectId },
+                    data: { progress: dynamicProgress }
+                });
+            }
+
+            return { ...enr, progress: dynamicProgress };
+        }));
+
+        return result;
     }
 
     async getStudentStats(userId: number) {

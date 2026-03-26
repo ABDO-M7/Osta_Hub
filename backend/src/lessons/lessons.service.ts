@@ -117,16 +117,16 @@ export class LessonsService {
             if (!lastActivity) {
                 currentStreak = 1;
             } else {
-                // Calculate simple diff in days using locale midnight
-                const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                const lastMidnight = new Date(lastActivity.getFullYear(), lastActivity.getMonth(), lastActivity.getDate());
-                const diffTime = Math.abs(nowMidnight.getTime() - lastMidnight.getTime());
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                
-                if (diffDays === 1) {
+                const nowMidnight = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+                const lastMidnight = new Date(Date.UTC(lastActivity.getUTCFullYear(), lastActivity.getUTCMonth(), lastActivity.getUTCDate()));
+                const diffDays = Math.round((nowMidnight.getTime() - lastMidnight.getTime()) / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 0) {
+                    // Same day — streak already counted, don't change it
+                } else if (diffDays === 1) {
                     currentStreak += 1;
-                } else if (diffDays > 1) {
-                    currentStreak = 1;
+                } else {
+                    currentStreak = 1; // streak broken
                 }
             }
             if (currentStreak > longestStreak) longestStreak = currentStreak;
