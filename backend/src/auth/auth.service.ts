@@ -40,14 +40,15 @@ export class AuthService {
                 emailVerified: true, // OAuth emails are pre-verified
             });
 
-            // Send welcome verification email
-            try {
-                const token = crypto.randomBytes(32).toString('hex');
-                await this.usersService.setVerifyToken(user.id, token);
-                await this.mailService.sendVerificationEmail(user.email, token);
-            } catch (_) {
-                // Non-blocking: email failure doesn't prevent login
-            }
+            // Since OAuth emails are verified, we don't NEED them to verify again to login,
+            // but we can send a welcome email. We do it NON-BLOCKINGly so SMTP delays don't hang the UI.
+            const newUser = user;
+            const token = crypto.randomBytes(32).toString('hex');
+            this.usersService.setVerifyToken(newUser.id, token).then(() => {
+                this.mailService.sendVerificationEmail(newUser.email, token).catch(err => {
+                    console.warn(`[OAuth Signup] Welcome email failed for ${newUser.email}:`, err.message);
+                });
+            }).catch(() => { /* silent */ });
         } else if (!user.providerId) {
             // Existing email-based user — link OAuth account
             user = await this.usersService.linkOAuth(user.id, profile.provider, profile.providerId, profile.avatar);

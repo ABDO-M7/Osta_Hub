@@ -7,6 +7,7 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule);
 
     // Security
+    (app as any).set('trust proxy', 1);
     app.use(helmet());
     app.use(require('express').json({ limit: '50mb' }));
     app.use(require('express').urlencoded({ limit: '50mb', extended: true }));
