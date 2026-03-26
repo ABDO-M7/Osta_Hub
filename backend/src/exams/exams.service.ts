@@ -8,6 +8,29 @@ import { UpdateExamDto } from './dto/update-exam.dto';
 export class ExamsService {
     constructor(private prisma: PrismaService) { }
 
+    async getLeaderboard(id: number) {
+        const exam = await this.prisma.exam.findUnique({ where: { id } });
+        if (!exam) throw new NotFoundException('Exam not found');
+
+        const attempts = await this.prisma.attempt.findMany({
+            where: { examId: id, submittedAt: { not: null } },
+            include: { user: { select: { id: true, name: true, avatar: true } } },
+            orderBy: { score: 'desc' },
+        });
+
+        // Best score per unique user
+        const seen = new Set<number>();
+        const top3: any[] = [];
+        for (const a of attempts) {
+            if (!seen.has(a.userId)) {
+                seen.add(a.userId);
+                top3.push({ name: a.user.name, avatar: a.user.avatar, score: a.score, totalPoints: a.totalPoints });
+                if (top3.length === 3) break;
+            }
+        }
+        return top3;
+    }
+
     async findAll(subjectId?: number) {
         return this.prisma.exam.findMany({
             where: subjectId ? { subjectId } : undefined,

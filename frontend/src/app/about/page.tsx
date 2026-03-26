@@ -27,8 +27,8 @@ const features = [
     },
     {
         icon: "📊",
-        title: "Admin Analytics Dashboard",
-        description: "Instructors get a full analytics view per exam — participation counts, attempt totals, best and average grades, and a ranked student leaderboard.",
+        title: "Exam Performance Analytics",
+        description: "After every exam, you can see the Top 3 students on a live in-exam leaderboard. Admins get a full dashboard with participation counts, grade distributions, and ranked student tables.",
     },
     {
         icon: "📝",

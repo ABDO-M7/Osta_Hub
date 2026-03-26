@@ -27,6 +27,12 @@ export class ExamsController {
         return this.examsService.findOneForStudent(id);
     }
 
+    @Get(':id/leaderboard')
+    @UseGuards(AuthGuard('jwt'))
+    getLeaderboard(@Param('id', ParseIntPipe) id: number) {
+        return this.examsService.getLeaderboard(id);
+    }
+
     @Get(':id/results')
     @UseGuards(AuthGuard('jwt'), RolesGuard)
     @Roles('ADMIN')

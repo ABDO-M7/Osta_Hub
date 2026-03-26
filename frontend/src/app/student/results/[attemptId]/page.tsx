@@ -6,13 +6,14 @@ import Link from "next/link"
 import { api } from "@/lib/api"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Award, ArrowLeft, CheckCircle2, XCircle, BrainCircuit, Sparkles, Loader2 } from "lucide-react"
+import { Award, ArrowLeft, CheckCircle2, XCircle, BrainCircuit, Sparkles, Loader2, Medal } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 
 export default function ExamResultsPage() {
     const params = useParams()
     const id = params?.attemptId
     const [attempt, setAttempt] = useState<any>(null)
+    const [leaderboard, setLeaderboard] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [generating, setGenerating] = useState(false)
 
@@ -22,6 +23,11 @@ export default function ExamResultsPage() {
             try {
                 const res = await api.get(`/attempts/${id}`)
                 setAttempt(res.data)
+                // Fetch top-3 leaderboard for this exam
+                try {
+                    const lb = await api.get(`/exams/${res.data.examId}/leaderboard`)
+                    setLeaderboard(lb.data || [])
+                } catch { /* silent, leaderboard is non-critical */ }
             } catch (err) {
                 console.error(err)
             } finally {
@@ -81,6 +87,38 @@ export default function ExamResultsPage() {
                 {isPass ? 'Congratulations! You passed.' : 'Keep studying. You can try again.'}
             </p>
             </div>
+
+            {/* ── Top-3 Leaderboard ────────────────────────────────────── */}
+            {leaderboard.length > 0 && (
+                <div>
+                    <div className="flex items-center gap-2 mb-4">
+                        <Medal className="w-5 h-5 text-amber-400" />
+                        <h2 className="text-lg font-bold text-white">Top Students — This Exam</h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        {leaderboard.map((entry, idx) => {
+                            const medals = ['🥇', '🥈', '🥉']
+                            const colors = [
+                                'from-amber-500/20 to-yellow-600/10 border-amber-500/30',
+                                'from-gray-400/20 to-gray-500/10 border-gray-400/30',
+                                'from-orange-700/20 to-amber-800/10 border-orange-600/30'
+                            ]
+                            const earned = entry.totalPoints ? Math.round((entry.score / 100) * entry.totalPoints) : null
+                            return (
+                                <div key={idx} className={`rounded-2xl border bg-gradient-to-br p-4 flex items-center gap-3 ${colors[idx]}`}>
+                                    <div className="text-3xl shrink-0">{medals[idx]}</div>
+                                    <div className="min-w-0">
+                                        <p className="font-semibold text-white text-sm truncate">{entry.name}</p>
+                                        <p className="text-xs text-gray-400 mt-0.5">
+                                            {earned !== null ? `${earned} / ${entry.totalPoints} pts` : `${Math.round(entry.score ?? 0)}%`}
+                                        </p>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            )}
 
             <div className="space-y-6">
                 {/* AI Analysis Section */}
