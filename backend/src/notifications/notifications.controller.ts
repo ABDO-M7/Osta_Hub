@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -16,8 +16,8 @@ export class NotificationsController {
 
     @Get()
     @UseGuards(AuthGuard('jwt'))
-    findAll() {
-        return this.notificationsService.findAll();
+    findAll(@Req() req: any) {
+        return this.notificationsService.findAll(req.user.sub);
     }
 
     @Post()

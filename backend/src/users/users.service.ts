@@ -49,10 +49,11 @@ export class UsersService {
             },
         });
 
-        // Send a welcome notification into the global feed
+        // Send a welcome notification for this specific user
         try {
             await this.prisma.notification.create({
                 data: {
+                    userId: user.id,
                     title: `🎉 Welcome to NeuroTron, ${user.name.split(' ')[0]}!`,
                     message: `We're thrilled to have you on board. Explore your course catalog, start learning, and track your progress — your journey begins now. Good luck! 🚀`,
                 }

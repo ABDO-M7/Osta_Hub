@@ -48,6 +48,7 @@ model User {
   feedbacks        Feedback[]
   lessonProgresses LessonProgress[]
   notes            Note[]
+  notifications    Notification[]
 
   @@map("users")
 }
@@ -183,10 +184,12 @@ model Feedback {
 
 model Notification {
   id        Int      @id @default(autoincrement())
+  userId    Int?
   title     String
   message   String
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
 }
